@@ -310,9 +310,16 @@ class AlterProcessor(
             .addCode("return %T(this).apply(block).build()", builderClassName)
             .build()
 
+        val toBuilderFunc = FunSpec.builder("toBuilder")
+            .receiver(classTypeName)
+            .returns(builderClassName)
+            .addCode("return %T(this)", builderClassName)
+            .build()
+
         FileSpec.builder(packageName, "${className}Alter")
             .addType(builderSpec.build())
             .addFunction(alterFunc)
+            .addFunction(toBuilderFunc)
             .build()
             .writeTo(codeGenerator, Dependencies(false, containingFile))
     }

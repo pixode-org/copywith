@@ -43,6 +43,7 @@ fun main() {
     val aliceWithEmail = alice.alter {
         email = "alice@example.com"
         secondaryAddresses[0].house = 22
+        secondaryAddresses.add(Address("Henry st", 6).toBuilder())
         relatives["mother"] = "Claire"
     }
     val aliceNewFriends = alice.alter { friends.add("Dave") }
