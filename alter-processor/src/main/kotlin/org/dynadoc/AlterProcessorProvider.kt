@@ -1,4 +1,4 @@
-﻿package com.alter
+package org.dynadoc
 
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment

@@ -2,7 +2,7 @@
     kotlin("jvm")
 }
 
-group = "com.alter"
+group = "org.dynadoc"
 version = "1.0.0"
 
 kotlin {

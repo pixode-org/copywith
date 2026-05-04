@@ -1,4 +1,4 @@
-﻿package com.alter
+package org.dynadoc
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
