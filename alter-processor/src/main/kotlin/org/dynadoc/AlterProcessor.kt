@@ -78,11 +78,14 @@ class AlterProcessor(
         return ClassName(declaration.packageName.asString(), "${declaration.simpleName.asString()}Builder")
     }
 
-    private fun collectionInfo(type: KSType): CollectionInfo? = when (type.declaration.qualifiedName?.asString()) {
+    private fun collectionInfo(type: KSType): CollectionInfo? {
+        if (type.isMarkedNullable) return null
+        return when (type.declaration.qualifiedName?.asString()) {
         "kotlin.collections.List" -> CollectionInfo(ClassName("kotlin.collections", "MutableList"), "toMutableList", "toList")
         "kotlin.collections.Set"  -> CollectionInfo(ClassName("kotlin.collections", "MutableSet"),  "toMutableSet",  "toSet")
         "kotlin.collections.Map"  -> CollectionInfo(ClassName("kotlin.collections", "MutableMap"),  "toMutableMap",  "toMap")
         else -> null
+        }
     }
 
     private fun generateOptional(packageName: String, containingFile: KSFile) {
