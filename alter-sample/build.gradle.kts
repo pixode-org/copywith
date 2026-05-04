@@ -7,7 +7,7 @@ group = "com.alter.sample"
 version = "1.0.0"
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(25)
 }
 
 dependencies {
