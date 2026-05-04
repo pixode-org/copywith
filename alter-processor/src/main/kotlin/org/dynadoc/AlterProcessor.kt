@@ -79,12 +79,59 @@ class AlterProcessor(
     }
 
     private fun collectionInfo(type: KSType): CollectionInfo? {
-        if (type.isMarkedNullable) return null
         return when (type.declaration.qualifiedName?.asString()) {
-        "kotlin.collections.List" -> CollectionInfo(ClassName("kotlin.collections", "MutableList"), "toMutableList", "toList")
-        "kotlin.collections.Set"  -> CollectionInfo(ClassName("kotlin.collections", "MutableSet"),  "toMutableSet",  "toSet")
-        "kotlin.collections.Map"  -> CollectionInfo(ClassName("kotlin.collections", "MutableMap"),  "toMutableMap",  "toMap")
-        else -> null
+            "kotlin.collections.List" -> CollectionInfo(ClassName("kotlin.collections", "MutableList"), "toMutableList", "toList")
+            "kotlin.collections.Set"  -> CollectionInfo(ClassName("kotlin.collections", "MutableSet"),  "toMutableSet",  "toSet")
+            "kotlin.collections.Map"  -> CollectionInfo(ClassName("kotlin.collections", "MutableMap"),  "toMutableMap",  "toMap")
+            else -> null
+        }
+    }
+
+    private fun collectionInitBlock(paramName: String, info: CollectionInfo, elementBuilders: List<ClassName?>, isNullable: Boolean): CodeBlock {
+        val dot = if (isNullable) "?." else "."
+        if (elementBuilders.none { it != null }) return CodeBlock.of("original.%N${dot}%N()", paramName, info.toMutable)
+        return when (info.mutableClass.simpleName) {
+            "MutableList", "MutableSet" ->
+                CodeBlock.of("original.%N${dot}map·{ %T(it) }${dot}%N()", paramName, elementBuilders[0]!!, info.toMutable)
+            "MutableMap" -> {
+                val keyBuilder = elementBuilders.getOrNull(0)
+                val valBuilder = elementBuilders.getOrNull(1)
+                when {
+                    keyBuilder != null && valBuilder != null ->
+                        CodeBlock.of("original.%N${dot}entries${dot}associate·{ %T(it.key) to %T(it.value) }${dot}toMutableMap()", paramName, keyBuilder, valBuilder)
+                    valBuilder != null ->
+                        CodeBlock.of("original.%N${dot}mapValues·{ %T(it.value) }${dot}toMutableMap()", paramName, valBuilder)
+                    else ->
+                        CodeBlock.of("original.%N${dot}entries${dot}associate·{ %T(it.key) to it.value }${dot}toMutableMap()", paramName, keyBuilder!!)
+                }
+            }
+            else -> CodeBlock.of("original.%N${dot}%N()", paramName, info.toMutable)
+        }
+    }
+
+    // Returns a CodeBlock for the full build expression: fieldName.getOrElse { initBlock }.transform()
+    private fun collectionBuildBlock(fieldName: String, paramName: String, info: CollectionInfo, elementBuilders: List<ClassName?>, isNullable: Boolean): CodeBlock {
+        val initExpr = collectionInitBlock(paramName, info, elementBuilders, isNullable)
+        val dot = if (isNullable) "?." else "."
+        if (elementBuilders.none { it != null }) {
+            return CodeBlock.of("%N.getOrElse·{ %L }${dot}%N()", fieldName, initExpr, info.toImmutable)
+        }
+        return when (info.mutableClass.simpleName) {
+            "MutableList", "MutableSet" ->
+                CodeBlock.of("%N.getOrElse·{ %L }${dot}map·{ it.build() }${dot}%N()", fieldName, initExpr, info.toImmutable)
+            "MutableMap" -> {
+                val keyBuilder = elementBuilders.getOrNull(0)
+                val valBuilder = elementBuilders.getOrNull(1)
+                when {
+                    keyBuilder != null && valBuilder != null ->
+                        CodeBlock.of("%N.getOrElse·{ %L }${dot}entries${dot}associate·{ it.key.build() to it.value.build() }${dot}toMap()", fieldName, initExpr)
+                    valBuilder != null ->
+                        CodeBlock.of("%N.getOrElse·{ %L }${dot}mapValues·{ it.value.build() }${dot}toMap()", fieldName, initExpr)
+                    else ->
+                        CodeBlock.of("%N.getOrElse·{ %L }${dot}entries${dot}associate·{ it.key.build() to it.value }${dot}toMap()", fieldName, initExpr)
+                }
+            }
+            else -> CodeBlock.of("%N.getOrElse·{ %L }${dot}%N()", fieldName, initExpr, info.toImmutable)
         }
     }
 
@@ -146,55 +193,12 @@ class AlterProcessor(
     private data class ParamMeta(
         val name: String,
         val typeName: TypeName,
+        val isNullable: Boolean,
         val collectionInfo: CollectionInfo?,
         val mutableType: TypeName?,
         val nestedBuilderClass: ClassName?,
         val elementBuilders: List<ClassName?>?,
     )
-
-    // Returns CodeBlock for initializing the mutable collection field from original.{paramName}
-    private fun collectionInitBlock(paramName: String, info: CollectionInfo, elementBuilders: List<ClassName?>): CodeBlock {
-        if (elementBuilders.none { it != null }) return CodeBlock.of("original.%N.%N()", paramName, info.toMutable)
-        return when (info.mutableClass.simpleName) {
-            "MutableList", "MutableSet" ->
-                CodeBlock.of("original.%N.map·{ %T(it) }.%N()", paramName, elementBuilders[0]!!, info.toMutable)
-            "MutableMap" -> {
-                val keyBuilder = elementBuilders.getOrNull(0)
-                val valBuilder = elementBuilders.getOrNull(1)
-                when {
-                    keyBuilder != null && valBuilder != null ->
-                        CodeBlock.of("original.%N.entries.associate·{ %T(it.key) to %T(it.value) }.toMutableMap()", paramName, keyBuilder, valBuilder)
-                    valBuilder != null ->
-                        CodeBlock.of("original.%N.mapValues·{ %T(it.value) }.toMutableMap()", paramName, valBuilder)
-                    else ->
-                        CodeBlock.of("original.%N.entries.associate·{ %T(it.key) to it.value }.toMutableMap()", paramName, keyBuilder!!)
-                }
-            }
-            else -> CodeBlock.of("original.%N.%N()", paramName, info.toMutable)
-        }
-    }
-
-    // Returns CodeBlock for the build() expression for a collection field named {name}
-    private fun collectionBuildBlock(name: String, info: CollectionInfo, elementBuilders: List<ClassName?>): CodeBlock {
-        if (elementBuilders.none { it != null }) return CodeBlock.of("%N.%N()", name, info.toImmutable)
-        return when (info.mutableClass.simpleName) {
-            "MutableList", "MutableSet" ->
-                CodeBlock.of("%N.map·{ it.build() }.%N()", name, info.toImmutable)
-            "MutableMap" -> {
-                val keyBuilder = elementBuilders.getOrNull(0)
-                val valBuilder = elementBuilders.getOrNull(1)
-                when {
-                    keyBuilder != null && valBuilder != null ->
-                        CodeBlock.of("%N.entries.associate·{ it.key.build() to it.value.build() }.toMap()", name)
-                    valBuilder != null ->
-                        CodeBlock.of("%N.mapValues·{ it.value.build() }.toMap()", name)
-                    else ->
-                        CodeBlock.of("%N.entries.associate·{ it.key.build() to it.value }.toMap()", name)
-                }
-            }
-            else -> CodeBlock.of("%N.%N()", name, info.toImmutable)
-        }
-    }
 
     private fun generateBuilderAndAlter(
         classDeclaration: KSClassDeclaration,
@@ -207,9 +211,12 @@ class AlterProcessor(
         val classTypeName = classDeclaration.toClassName()
         val builderClassName = ClassName(packageName, "${className}Builder")
         val optionalClass = ClassName(packageName, "Optional")
+        val optionalNone = ClassName(packageName, "Optional", "None")
+        val optionalSome = ClassName(packageName, "Optional", "Some")
 
         val paramMetas = parameters.map { param ->
             val resolvedType = param.type.resolve()
+            val isNullable = resolvedType.isMarkedNullable
             val typeName = param.type.toTypeName(typeParamResolver)
             val info = collectionInfo(resolvedType)
             val elementBuilders = info?.let {
@@ -219,68 +226,92 @@ class AlterProcessor(
                 val args = resolvedType.arguments.mapIndexed { idx, a ->
                     elementBuilders?.get(idx) ?: a.type?.toTypeName(typeParamResolver) ?: STAR
                 }
-                i.mutableClass.parameterizedBy(args)
+                val base = i.mutableClass.parameterizedBy(args)
+                if (isNullable) base.copy(nullable = true) else base
             }
             val nestedBuilder = if (info == null) nestedBuilderClass(resolvedType) else null
-            ParamMeta(param.name!!.asString(), typeName, info, mutableType, nestedBuilder, elementBuilders)
+            ParamMeta(param.name!!.asString(), typeName, isNullable, info, mutableType, nestedBuilder, elementBuilders)
         }
 
         val builderSpec = TypeSpec.classBuilder("${className}Builder")
             .primaryConstructor(FunSpec.constructorBuilder().addParameter("original", classTypeName).build())
             .addProperty(PropertySpec.builder("original", classTypeName).addModifiers(KModifier.PRIVATE).initializer("original").build())
 
-        paramMetas.forEach { (name, typeName, info, mutableType, nestedBuilder, elementBuilders) ->
+        paramMetas.forEach { (name, typeName, isNullable, info, mutableType, nestedBuilder, elementBuilders) ->
             val fieldName = "${name}Field"
+
+            // Determine the public property type exposed by the builder
+            val publicType: TypeName = when {
+                info != null && mutableType != null -> mutableType
+                nestedBuilder != null -> if (isNullable) nestedBuilder.copy(nullable = true) else nestedBuilder
+                else -> typeName
+            }
+
+            // Backing field: Optional<PublicType>, always initialized to None
+            builderSpec.addProperty(
+                PropertySpec.builder(fieldName, optionalClass.parameterizedBy(publicType))
+                    .addModifiers(KModifier.PRIVATE)
+                    .mutable(true)
+                    .initializer("%T.None", optionalClass)
+                    .build()
+            )
+
+            val optionalSomeTyped = optionalSome.parameterizedBy(publicType)
+
+            val getter: FunSpec
+            val setter: FunSpec
+
             when {
                 info != null && mutableType != null -> {
-                    builderSpec.addProperty(
-                        PropertySpec.builder(fieldName, mutableType)
-                            .addModifiers(KModifier.PRIVATE)
-                            .mutable(true)
-                            .initializer(collectionInitBlock(name, info, elementBuilders ?: emptyList()))
-                            .build()
-                    )
-                    builderSpec.addProperty(
-                        PropertySpec.builder(name, mutableType)
-                            .mutable(true)
-                            .getter(FunSpec.getterBuilder().addCode("return %N\n", fieldName).build())
-                            .setter(FunSpec.setterBuilder().addParameter("value", mutableType).addCode("%N = value\n", fieldName).build())
-                            .build()
-                    )
+                    // Collection: lazy-init getter that copies from original on first access
+                    val initExpr = collectionInitBlock(name, info, elementBuilders ?: emptyList(), isNullable)
+                    getter = FunSpec.getterBuilder()
+                        .beginControlFlow("if (%N is %T)", fieldName, optionalNone)
+                        .addStatement("%N = %T(%L)", fieldName, optionalSome, initExpr)
+                        .endControlFlow()
+                        .addStatement("return (%N as %T).value", fieldName, optionalSomeTyped)
+                        .build()
+                    setter = FunSpec.setterBuilder()
+                        .addParameter("value", publicType)
+                        .addCode("%N = %T(value)\n", fieldName, optionalSome)
+                        .build()
                 }
                 nestedBuilder != null -> {
-                    builderSpec.addProperty(
-                        PropertySpec.builder(fieldName, nestedBuilder)
-                            .addModifiers(KModifier.PRIVATE)
-                            .mutable(true)
-                            .initializer("%T(original.%N)", nestedBuilder, name)
-                            .build()
-                    )
-                    builderSpec.addProperty(
-                        PropertySpec.builder(name, nestedBuilder)
-                            .mutable(true)
-                            .getter(FunSpec.getterBuilder().addCode("return %N\n", fieldName).build())
-                            .setter(FunSpec.setterBuilder().addParameter("value", nestedBuilder).addCode("%N = value\n", fieldName).build())
-                            .build()
-                    )
+                    // Nested @Alter type: lazy-init getter that wraps original in a builder on first access
+                    val initExpr = if (isNullable)
+                        CodeBlock.of("original.%N?.let·{ %T(it) }", name, nestedBuilder)
+                    else
+                        CodeBlock.of("%T(original.%N)", nestedBuilder, name)
+                    getter = FunSpec.getterBuilder()
+                        .beginControlFlow("if (%N is %T)", fieldName, optionalNone)
+                        .addStatement("%N = %T(%L)", fieldName, optionalSome, initExpr)
+                        .endControlFlow()
+                        .addStatement("return (%N as %T).value", fieldName, optionalSomeTyped)
+                        .build()
+                    setter = FunSpec.setterBuilder()
+                        .addParameter("value", publicType)
+                        .addCode("%N = %T(value)\n", fieldName, optionalSome)
+                        .build()
                 }
                 else -> {
-                    builderSpec.addProperty(
-                        PropertySpec.builder(fieldName, optionalClass.parameterizedBy(typeName))
-                            .addModifiers(KModifier.PRIVATE)
-                            .mutable(true)
-                            .initializer("%T.None", optionalClass)
-                            .build()
-                    )
-                    builderSpec.addProperty(
-                        PropertySpec.builder(name, typeName)
-                            .mutable(true)
-                            .getter(FunSpec.getterBuilder().addCode("return %N.getOrElse { original.%N }\n", fieldName, name).build())
-                            .setter(FunSpec.setterBuilder().addParameter("value", typeName).addCode("%N = %T.of(value)\n", fieldName, optionalClass).build())
-                            .build()
-                    )
+                    // Scalar: getOrElse fallback to original value
+                    getter = FunSpec.getterBuilder()
+                        .addCode("return %N.getOrElse { original.%N }\n", fieldName, name)
+                        .build()
+                    setter = FunSpec.setterBuilder()
+                        .addParameter("value", publicType)
+                        .addCode("%N = %T.of(value)\n", fieldName, optionalClass)
+                        .build()
                 }
             }
+
+            builderSpec.addProperty(
+                PropertySpec.builder(name, publicType)
+                    .mutable(true)
+                    .getter(getter)
+                    .setter(setter)
+                    .build()
+            )
         }
 
         builderSpec.addFunction(
@@ -291,11 +322,17 @@ class AlterProcessor(
                         .add("return %T(\n", classTypeName)
                         .indent()
                         .apply {
-                            paramMetas.forEach { (name, _, info, _, nestedBuilder, elementBuilders) ->
+                            paramMetas.forEach { (name, _, isNullable, info, _, nestedBuilder, elementBuilders) ->
+                                val fieldName = "${name}Field"
                                 when {
-                                    info != null -> add("%N = %L,\n", name, collectionBuildBlock(name, info, elementBuilders ?: emptyList()))
-                                    nestedBuilder != null -> add("%N = %N.build(),\n", name, name)
-                                    else -> add("%N = %N,\n", name, name)
+                                    info != null ->
+                                        add("%N = %L,\n", name, collectionBuildBlock(fieldName, name, info, elementBuilders ?: emptyList(), isNullable))
+                                    nestedBuilder != null -> if (isNullable)
+                                        add("%N = %N.getOrElse·{ original.%N?.let·{ %T(it) } }?.build(),\n", name, fieldName, name, nestedBuilder)
+                                    else
+                                        add("%N = %N.getOrElse·{ %T(original.%N) }.build(),\n", name, fieldName, nestedBuilder, name)
+                                    else ->
+                                        add("%N = %N,\n", name, name)
                                 }
                             }
                         }

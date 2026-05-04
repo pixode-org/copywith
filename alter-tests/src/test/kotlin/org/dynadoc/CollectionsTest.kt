@@ -1,6 +1,7 @@
 package org.dynadoc
 
 import io.kotest.matchers.shouldBe
+import java.time.DayOfWeek
 import kotlin.test.Test
 
 class CollectionsTest {
@@ -8,7 +9,7 @@ class CollectionsTest {
     private val scalarsElement = Scalars(string = "x", integer = 1, nullable = null)
     private val original = Collections(
         list = listOf("a", "b", "c"),
-        map = emptyMap(),
+        map = mapOf(DayOfWeek.MONDAY to 8),
         set = setOf(scalarsElement),
         nullable = listOf(1L, 2L),
     )
@@ -45,6 +46,32 @@ class CollectionsTest {
         original.list shouldBe listOf("a", "b", "c")
     }
 
+    // Map
+
+    @Test
+    fun `alter adds an entry to the map`() {
+        val result = original.alter { map[DayOfWeek.TUESDAY] = 9 }
+        result.map shouldBe mapOf(DayOfWeek.MONDAY to 8, DayOfWeek.TUESDAY to 9)
+    }
+
+    @Test
+    fun `alter modifies an existing entry in the map`() {
+        val result = original.alter { map[DayOfWeek.MONDAY] = 10 }
+        result.map shouldBe mapOf(DayOfWeek.MONDAY to 10)
+    }
+
+    @Test
+    fun `alter replaces the entire map`() {
+        val result = original.alter { map = mutableMapOf(DayOfWeek.FRIDAY to 5) }
+        result.map shouldBe mapOf(DayOfWeek.FRIDAY to 5)
+    }
+
+    @Test
+    fun `alter does not mutate the original map`() {
+        original.alter { map[DayOfWeek.TUESDAY] = 9 }
+        original.map shouldBe mapOf(DayOfWeek.MONDAY to 8)
+    }
+
     // Set of @Alter elements
 
     @Test
@@ -63,13 +90,25 @@ class CollectionsTest {
 
     @Test
     fun `alter replaces the nullable list`() {
-        val result = original.alter { nullable = listOf(1L, 2L, 3L) }
+        val result = original.alter { nullable = mutableListOf(1L, 2L, 3L) }
+        result.nullable shouldBe listOf(1L, 2L, 3L)
+    }
+
+    @Test
+    fun `alter sets the nullable list to null`() {
+        val result = original.alter { nullable = null }
+        result.nullable shouldBe null
+    }
+
+    @Test
+    fun `alter adds an element to the nullable list`() {
+        val result = original.alter { nullable?.add(3L) }
         result.nullable shouldBe listOf(1L, 2L, 3L)
     }
 
     @Test
     fun `alter does not mutate the original nullable list`() {
-        original.alter { nullable = listOf(9L) }
+        original.alter { nullable = mutableListOf(9L) }
         original.nullable shouldBe listOf(1L, 2L)
     }
 
