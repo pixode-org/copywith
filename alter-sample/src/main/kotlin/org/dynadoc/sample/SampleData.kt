@@ -6,26 +6,35 @@ import org.dynadoc.Alter
 data class Person(
     val name: String,
     val age: Int,
-    val email: String? = null,
+    val email: String?,
+    val friends: List<String>,
 )
 
 @Alter
-data class Box<T>(
-    val value: T,
-    val label: String,
+data class Config(
+    val host: String,
+    val port: Int,
+    val tags: Set<String>,
+    val properties: Map<String, String>,
 )
 
 fun main() {
-    val alice = Person(name = "Alice", age = 30)
-    val olderAlice = alice.alter(age = 31)
-    val aliceWithEmail = alice.alter(email = "alice@example.com")
+    val alice = Person(name = "Alice", age = 30, email = null, friends = listOf("Bob", "Carol"))
+    val olderAlice = alice.alter { age = 31 }
+    val aliceWithEmail = alice.alter { email = "alice@example.com" }
+    val aliceNewFriends = alice.alter { friends.add("Dave") }
 
     println(alice)
     println(olderAlice)
     println(aliceWithEmail)
+    println(aliceNewFriends)
 
-    val box = Box(value = 42, label = "answer")
-    val renamedBox = box.alter(label = "the answer")
-    println(box)
-    println(renamedBox)
+    val config = Config(host = "localhost", port = 8080, tags = setOf("prod"), properties = mapOf("k" to "v"))
+    val remoteConfig = config.alter {
+        host = "example.com"
+        tags.add("remote")
+        properties["k"] = "v2"
+    }
+    println(config)
+    println(remoteConfig)
 }
