@@ -1,4 +1,4 @@
-package org.dynadoc.sample
+package org.dynadoc
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

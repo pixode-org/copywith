@@ -3,7 +3,7 @@
     id("com.google.devtools.ksp")
 }
 
-group = "org.dynadoc.sample"
+group = "org.dynadoc"
 version = "1.0.0"
 
 kotlin {

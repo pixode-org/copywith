@@ -1,4 +1,4 @@
-package org.dynadoc.sample
+package org.dynadoc
 
 import java.net.URI
 import kotlin.test.Test
