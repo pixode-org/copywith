@@ -11,6 +11,12 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":alter-annotation"))
-    ksp(project(":alter-processor"))
+    testImplementation(project(":alter-annotation"))
+    testImplementation(kotlin("test"))
+
+    kspTest(project(":alter-processor"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
