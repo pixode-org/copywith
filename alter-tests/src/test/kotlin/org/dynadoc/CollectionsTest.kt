@@ -1,9 +1,7 @@
 package org.dynadoc
 
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class CollectionsTest {
 
@@ -17,30 +15,34 @@ class CollectionsTest {
 
     @Test
     fun `alter with no changes returns an equal object`() {
-        assertEquals(original, original.alter {})
+        val result = original.alter {}
+        result shouldBe original
     }
 
     // List
 
     @Test
     fun `alter adds an element to the list`() {
-        assertEquals(listOf("a", "b", "c", "d"), original.alter { list.add("d") }.list)
+        val result = original.alter { list.add("d") }
+        result.list shouldBe listOf("a", "b", "c", "d")
     }
 
     @Test
     fun `alter removes an element from the list`() {
-        assertEquals(listOf("a", "c"), original.alter { list.remove("b") }.list)
+        val result = original.alter { list.remove("b") }
+        result.list shouldBe listOf("a", "c")
     }
 
     @Test
     fun `alter replaces an element in the list`() {
-        assertEquals(listOf("z", "b", "c"), original.alter { list[0] = "z" }.list)
+        val result = original.alter { list[0] = "z" }
+        result.list shouldBe listOf("z", "b", "c")
     }
 
     @Test
     fun `alter does not mutate the original list`() {
         original.alter { list.add("d") }
-        assertEquals(listOf("a", "b", "c"), original.list)
+        original.list shouldBe listOf("a", "b", "c")
     }
 
     // Set of @Alter elements
@@ -48,30 +50,32 @@ class CollectionsTest {
     @Test
     fun `alter modifies a field on an element in the set`() {
         val result = original.alter { set.first().string = "updated" }
-        assertEquals(setOf(Scalars("updated", 1, null)), result.set)
+        result.set shouldBe setOf(Scalars("updated", 1, null))
     }
 
     @Test
     fun `alter does not mutate the original set`() {
         original.alter { set.first().string = "updated" }
-        assertEquals(setOf(scalarsElement), original.set)
+        original.set shouldBe setOf(scalarsElement)
     }
 
     // Nullable list (backed by Optional — assigned as a whole)
 
     @Test
     fun `alter replaces the nullable list`() {
-        assertEquals(listOf(1L, 2L, 3L), original.alter { nullable = listOf(1L, 2L, 3L) }.nullable)
+        val result = original.alter { nullable = listOf(1L, 2L, 3L) }
+        result.nullable shouldBe listOf(1L, 2L, 3L)
     }
 
     @Test
     fun `alter does not mutate the original nullable list`() {
         original.alter { nullable = listOf(9L) }
-        assertEquals(listOf(1L, 2L), original.nullable)
+        original.nullable shouldBe listOf(1L, 2L)
     }
 
     @Test
     fun `toBuilder round-trips the object unchanged`() {
-        assertEquals(original, original.toBuilder().build())
+        val result = original.toBuilder().build()
+        result shouldBe original
     }
 }

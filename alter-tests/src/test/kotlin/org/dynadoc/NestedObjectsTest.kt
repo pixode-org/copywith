@@ -1,8 +1,8 @@
 package org.dynadoc
 
+import io.kotest.matchers.shouldBe
 import java.net.URI
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class NestedObjectsTest {
 
@@ -12,43 +12,45 @@ class NestedObjectsTest {
 
     @Test
     fun `alter with no changes returns an equal object`() {
-        assertEquals(original, original.alter {})
+        val result = original.alter {}
+        result shouldBe original
     }
 
     @Test
     fun `alter modifies a field on the alterable nested object`() {
         val result = original.alter { alterable.string = "world" }
-        assertEquals(Scalars("world", 42, null), result.alterable)
+        result.alterable shouldBe Scalars("world", 42, null)
     }
 
     @Test
     fun `alter replaces the alterable nested object`() {
         val replacement = Scalars("new", 0, "tag")
         val result = original.alter { alterable = replacement.toBuilder() }
-        assertEquals(replacement, result.alterable)
+        result.alterable shouldBe replacement
     }
 
     @Test
     fun `alter sets the non-alterable field`() {
         val newUri = URI("http://other.com")
         val result = original.alter { nonAlterable = newUri }
-        assertEquals(newUri, result.nonAlterable)
+        result.nonAlterable shouldBe newUri
     }
 
     @Test
     fun `alter does not change unmodified fields`() {
         val result = original.alter { alterable.string = "world" }
-        assertEquals(original.nonAlterable, result.nonAlterable)
+        result.nonAlterable shouldBe original.nonAlterable
     }
 
     @Test
     fun `alter does not mutate the original`() {
         original.alter { alterable.string = "world" }
-        assertEquals(scalars, original.alterable)
+        original.alterable shouldBe scalars
     }
 
     @Test
     fun `toBuilder round-trips the object unchanged`() {
-        assertEquals(original, original.toBuilder().build())
+        val result = original.toBuilder().build()
+        result shouldBe original
     }
 }
