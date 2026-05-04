@@ -1,0 +1,102 @@
+###############################################################################
+# attribute       # Checkin behavior # Checkout behavior
+###############################################################################
+# text            # Normalized to LF # Convert to native line endings
+# [text] eol=crlf # Normalized to LF # Convert to CRLF
+# [text] eol=lf   # Normalized to LF # Convert to LF
+# -text or binary # No conversion    # No conversion
+# text=auto       # Like "text" if text file according to git, otherwise, like "binary"
+# unspecified     # Fall back to core.autocrlf setting of local environment
+###############################################################################
+# core.autocrlf
+#   false: same as binary
+#   true:  same as eol=crlf
+#   input: same as eol=lf
+
+###############################################################################
+# Set default behavior to automatically normalize line endings.
+###############################################################################
+# --- Default behavior ---
+* text=auto eol=lf
+
+# --- Core JVM languages ---
+*.kt     text diff=kotlin
+*.kts    text diff=kotlin
+*.java   text diff=java
+
+# --- Gradle-specific ---
+*.gradle   text diff=groovy
+*.gradle.kts text diff=kotlin
+gradlew     text eol=lf
+gradlew.bat text eol=crlf
+
+# Gradle wrapper JAR should be treated as binary
+gradle/wrapper/gradle-wrapper.jar binary
+
+# --- Frontend / scripting ---
+*.js     text diff=javascript
+*.jsx    text diff=javascript
+*.ts     text diff=typescript
+*.tsx    text diff=typescript
+
+# --- Config / structured data ---
+*.json   text diff=json
+*.yml    text diff=yaml
+*.yaml   text diff=yaml
+*.xml    text diff=xml
+*.properties text
+*.toml   text
+*.ini    text
+
+# --- Documentation ---
+*.md     text diff=markdown
+*.txt    text
+
+# --- Scripts ---
+*.sh     text eol=lf
+*.bash   text eol=lf
+*.zsh    text eol=lf
+
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+*.ps1    text eol=crlf
+
+# --- Build outputs (ensure binary handling if committed accidentally) ---
+*.class  binary
+*.jar    binary
+*.war    binary
+*.ear    binary
+*.apk    binary
+
+# --- Common binary assets ---
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.bmp    binary
+*.ico    binary
+*.pdf    binary
+*.zip    binary
+*.tar    binary
+*.gz     binary
+*.7z     binary
+
+# --- Native libs ---
+*.so     binary
+*.dll    binary
+*.dylib  binary
+*.exe    binary
+
+# --- Dependency lock files ---
+
+# Prevent painful merges; regenerate instead
+gradle.lockfile     merge=ours
+**/gradle.lockfile  merge=ours
+
+package-lock.json merge=ours
+yarn.lock         merge=ours
+pnpm-lock.yaml    merge=ours
+
+# --- IDE files (if tracked) ---
+*.iml text
+.idea/*.xml text
