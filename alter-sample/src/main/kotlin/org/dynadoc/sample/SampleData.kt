@@ -8,6 +8,9 @@ data class Person(
     val age: Int,
     val email: String?,
     val friends: List<String>,
+    val relatives: Map<String, String>,
+    val address: Address,
+    val secondaryAddresses: List<Address>,
 )
 
 @Alter
@@ -18,10 +21,30 @@ data class Config(
     val properties: Map<String, String>,
 )
 
+@Alter
+data class Address(
+    val street: String,
+    val house: Int
+)
+
 fun main() {
-    val alice = Person(name = "Alice", age = 30, email = null, friends = listOf("Bob", "Carol"))
+    val alice = Person(
+        name = "Alice",
+        age = 30,
+        email = null,
+        friends = listOf("Bob", "Carol"),
+        relatives = mapOf("mother" to "Therese", "father" to "Bob"),
+        address = Address("Baker st", 15),
+        secondaryAddresses = listOf(
+            Address("Downing st", 11)
+        )
+    )
     val olderAlice = alice.alter { age = 31 }
-    val aliceWithEmail = alice.alter { email = "alice@example.com" }
+    val aliceWithEmail = alice.alter {
+        email = "alice@example.com"
+        secondaryAddresses[0].house = 22
+        relatives["mother"] = "Claire"
+    }
     val aliceNewFriends = alice.alter { friends.add("Dave") }
 
     println(alice)
