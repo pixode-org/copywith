@@ -13,6 +13,8 @@ kotlin {
 dependencies {
     testImplementation(project(":alter-annotation"))
     testImplementation(kotlin("test"))
+    testImplementation("io.kotest:kotest-assertions-core:6.1.11")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:6.1.11")
 
     kspTest(project(":alter-processor"))
 }
