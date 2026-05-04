@@ -1,6 +1,6 @@
-﻿package com.alter.sample
+package org.dynadoc.sample
 
-import com.alter.Alter
+import org.dynadoc.Alter
 
 @Alter
 data class Person(
