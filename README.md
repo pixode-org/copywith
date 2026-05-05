@@ -1,5 +1,7 @@
 # CopyWith
 
+<a href="https://central.sonatype.com/artifact/org.pixode/copywith-annotation">![Maven Central Version](https://img.shields.io/maven-central/v/org.pixode/copywith-annotation)</a>
+
 A Kotlin annotation processor that generates a fluent, type-safe `copyWith()` function for data classes. Unlike the built-in `.copy()` method, `copyWith()` supports deeply nested modifications and collection mutations without replacing the entire structure.
 
 ## Setup
@@ -20,10 +22,10 @@ dependencies {
 
 ## Basic Usage
 
-Annotate any data class with `@Alter`:
+Annotate any data class with `@CopyWith`:
 
 ```kotlin
-@Alter
+@CopyWith
 data class User(
     val name: String,
     val age: Int,
@@ -55,13 +57,13 @@ val noEmail = original.copyWith { email = null }
 
 ## Nested Objects
 
-When a data class contains fields that are themselves `@Alter`-annotated, you can modify nested fields directly without replacing the entire nested object:
+When a data class contains fields that are themselves `@CopyWith`-annotated, you can modify nested fields directly without replacing the entire nested object:
 
 ```kotlin
-@Alter
+@CopyWith
 data class Address(val street: String, val city: String)
 
-@Alter
+@CopyWith
 data class Person(val name: String, val address: Address)
 ```
 
@@ -92,7 +94,7 @@ val relocated = original.copyWith {
 ### Lists
 
 ```kotlin
-@Alter
+@CopyWith
 data class Playlist(val title: String, val tracks: List<String>)
 ```
 
@@ -118,7 +120,7 @@ original.tracks // ["Song A", "Song B", "Song C"]
 ### Maps
 
 ```kotlin
-@Alter
+@CopyWith
 data class Config(val settings: Map<String, Int>)
 ```
 
@@ -132,60 +134,6 @@ val updated = original.copyWith { settings["timeout"] = 60 }
 // Remove an entry
 val reduced = original.copyWith { settings.remove("retries") }
 // Config(settings={"timeout": 30})
-```
-
-### Sets of @Alter Objects
-
-When a collection contains `@Alter`-annotated elements, the builder exposes a mutable collection of builders, allowing deep modifications:
-
-```kotlin
-@Alter
-data class Tag(val name: String, val color: String)
-
-@Alter
-data class Article(val title: String, val tags: Set<Tag>)
-```
-
-```kotlin
-val original = Article(
-    title = "Hello World",
-    tags = setOf(Tag("kotlin", "orange"), Tag("jvm", "purple"))
-)
-
-// Add a new tag
-val tagged = original.copyWith {
-    tags.add(Tag("oss", "green").toBuilder())
-}
-
-// Modify an existing tag's color
-val recolored = original.copyWith {
-    tags.first { it.name == "kotlin" }.color = "blue"
-}
-```
-
-## Nullable Collections
-
-Nullable collection fields can be set, cleared, or modified when present:
-
-```kotlin
-@Alter
-data class Report(val title: String, val notes: List<String>?)
-```
-
-```kotlin
-val original = Report(title = "Q1", notes = null)
-
-// Set a null collection to a value
-val withNotes = original.copyWith { notes = mutableListOf("Note 1", "Note 2") }
-// Report(title="Q1", notes=["Note 1", "Note 2"])
-
-// Clear a non-null collection
-val cleared = withNotes.copyWith { notes = null }
-// Report(title="Q1", notes=null)
-
-// Modify a non-null collection in place
-val extended = withNotes.copyWith { notes?.add("Note 3") }
-// Report(title="Q1", notes=["Note 1", "Note 2", "Note 3"])
 ```
 
 ## Using `toBuilder()`
@@ -203,4 +151,12 @@ val result = builder.build()
 
 ## License
 
-Apache License 2.0 — Copyright 2026 Flavien Charlon
+Copyright 2026 Flavien Charlon
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+

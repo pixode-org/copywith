@@ -3,14 +3,14 @@ package org.pixode.copywith
 import java.net.URI
 import java.time.DayOfWeek
 
-@Alter
+@CopyWith
 data class Scalars(
     val string: String,
     val integer: Int,
     val nullable: String?
 )
 
-@Alter
+@CopyWith
 data class Collections(
     val list: List<String>,
     val map: Map<DayOfWeek, Int>,
@@ -18,7 +18,7 @@ data class Collections(
     val nullable: List<Long>?,
 )
 
-@Alter
+@CopyWith
 data class NestedObjects(
     val alterable: Scalars,
     val nonAlterable: URI,
