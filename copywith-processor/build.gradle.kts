@@ -3,7 +3,7 @@
 }
 
 dependencies {
-    implementation(project(":alter-annotation"))
+    implementation(project(":copywith-annotation"))
     implementation("com.google.devtools.ksp:symbol-processing-api:2.3.7")
     implementation("com.squareup:kotlinpoet:2.3.0")
     implementation("com.squareup:kotlinpoet-ksp:2.3.0")
@@ -15,9 +15,9 @@ publishing {
             from(components["java"])
 
             pom {
-                name = "Alter"
+                name = "CopyWith"
                 description = ""
-                url = "https://github.com/pgdoc/alter"
+                url = "https://github.com/pixode-org/copywith"
                 licenses {
                     license {
                         name = "The Apache License, Version 2.0"
@@ -31,8 +31,8 @@ publishing {
                     }
                 }
                 scm {
-                    connection = "scm:git:git://github.com/pgdoc/alter.git"
-                    url = "https://github.com/pgdoc/alter/tree/master"
+                    connection = "scm:git:git://github.com/pixode-org/copywith.git"
+                    url = "https://github.com/pixode-org/copywith/tree/master"
                 }
             }
         }

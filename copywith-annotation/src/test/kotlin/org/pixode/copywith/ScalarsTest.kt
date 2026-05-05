@@ -1,6 +1,5 @@
-package org.dynadoc
+package org.pixode.copywith
 
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 

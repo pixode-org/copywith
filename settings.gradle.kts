@@ -1,7 +1,7 @@
 ﻿plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
-rootProject.name = "alter"
+rootProject.name = "copywith"
 
-include(":alter-annotation")
-include(":alter-processor")
+include(":copywith-annotation")
+include(":copywith-processor")

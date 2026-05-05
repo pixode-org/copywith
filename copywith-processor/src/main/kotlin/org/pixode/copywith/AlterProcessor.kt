@@ -1,4 +1,4 @@
-package org.dynadoc
+package org.pixode.copywith
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
@@ -144,8 +144,8 @@ class AlterProcessor(
         val className = classDeclaration.simpleName.asString()
         val classTypeName = classDeclaration.toClassName()
         val builderClassName = ClassName(packageName, "${className}Builder")
-        val optionalClass = ClassName("org.dynadoc", "Optional")
-        val optionalSome = ClassName("org.dynadoc", "Optional", "Some")
+        val optionalClass = ClassName("org.pixode.copywith", "Optional")
+        val optionalSome = ClassName("org.pixode.copywith", "Optional", "Some")
 
         val paramMetas = parameters.map { param ->
             val resolvedType = param.type.resolve()
