@@ -35,7 +35,7 @@ class CopyWithProcessor(
 ) : SymbolProcessor {
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation(Alter::class.qualifiedName!!)
+        val symbols = resolver.getSymbolsWithAnnotation(CopyWith::class.qualifiedName!!)
         val unprocessed = symbols.filter { !it.validate() }.toList()
         symbols.filterIsInstance<KSClassDeclaration>().filter { it.validate() }.forEach { processClass(it) }
         return unprocessed
@@ -43,7 +43,7 @@ class CopyWithProcessor(
 
     private fun processClass(classDeclaration: KSClassDeclaration) {
         if (Modifier.DATA !in classDeclaration.modifiers) {
-            logger.error("@Alter can only be applied to data classes", classDeclaration)
+            logger.error("@CopyWith can only be applied to data classes", classDeclaration)
             return
         }
         val primaryConstructor = classDeclaration.primaryConstructor ?: return
@@ -62,10 +62,10 @@ class CopyWithProcessor(
 
     private fun nestedBuilderClass(type: KSType): ClassName? {
         val declaration = type.declaration
-        val isAlterAnnotated = declaration.annotations.any {
-            it.annotationType.resolve().declaration.qualifiedName?.asString() == Alter::class.qualifiedName
+        val isCopyWithAnnotated = declaration.annotations.any {
+            it.annotationType.resolve().declaration.qualifiedName?.asString() == CopyWith::class.qualifiedName
         }
-        if (!isAlterAnnotated) return null
+        if (!isCopyWithAnnotated) return null
         return ClassName(declaration.packageName.asString(), "${declaration.simpleName.asString()}Builder")
     }
 

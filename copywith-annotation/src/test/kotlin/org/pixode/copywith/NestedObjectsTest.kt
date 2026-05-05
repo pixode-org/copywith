@@ -42,7 +42,7 @@ class NestedObjectsTest {
         result.nonAlterable shouldBe original.nonAlterable
     }
 
-    // Nullable nested @Alter field
+    // Nullable nested @CopyWith field
 
     @Test
     fun `copyWith sets a null nullable field to a new builder`() {

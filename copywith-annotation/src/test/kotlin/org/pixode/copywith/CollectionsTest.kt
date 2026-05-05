@@ -78,7 +78,7 @@ class CollectionsTest {
         original.map shouldBe mapOf(DayOfWeek.MONDAY to 8)
     }
 
-    // Set of @Alter elements
+    // Set of @CopyWith elements
 
     @Test
     fun `copyWith adds an entry to the set`() {
