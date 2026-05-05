@@ -12,20 +12,17 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
-import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
-import com.squareup.kotlinpoet.NOTHING
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.STAR
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.UNIT
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -36,8 +33,6 @@ class AlterProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
 ) : SymbolProcessor {
-
-    private val processedPackages = mutableSetOf<String>()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(Alter::class.qualifiedName!!)
@@ -56,10 +51,6 @@ class AlterProcessor(
         if (parameters.isEmpty()) return
         val packageName = classDeclaration.packageName.asString()
         val containingFile = classDeclaration.containingFile!!
-        if (packageName !in processedPackages) {
-            processedPackages += packageName
-            generateOptional(packageName, containingFile)
-        }
         generateBuilderAndAlter(classDeclaration, parameters, packageName, containingFile)
     }
 
@@ -135,61 +126,6 @@ class AlterProcessor(
         }
     }
 
-    private fun generateOptional(packageName: String, containingFile: KSFile) {
-        val T = TypeVariableName("T", variance = KModifier.OUT)
-        val TInvariant = TypeVariableName("T")
-        val optionalClass = ClassName(packageName, "Optional")
-
-        val noneSpec = TypeSpec.objectBuilder("None")
-            .superclass(optionalClass.parameterizedBy(NOTHING))
-            .build()
-
-        val someSpec = TypeSpec.classBuilder("Some")
-            .addModifiers(KModifier.DATA)
-            .addTypeVariable(TInvariant)
-            .primaryConstructor(FunSpec.constructorBuilder().addParameter("value", TInvariant).build())
-            .addProperty(PropertySpec.builder("value", TInvariant).initializer("value").build())
-            .superclass(optionalClass.parameterizedBy(TInvariant))
-            .build()
-
-        val TCompanion = TypeVariableName("T")
-        val companionSpec = TypeSpec.companionObjectBuilder()
-            .addFunction(
-                FunSpec.builder("of")
-                    .addTypeVariable(TCompanion)
-                    .addParameter("value", TCompanion.copy(nullable = true))
-                    .returns(optionalClass.parameterizedBy(TCompanion))
-                    .addCode("return if (value == null) None else Some(value)")
-                    .build()
-            )
-            .build()
-
-        val unsafeVariance = AnnotationSpec.builder(ClassName("kotlin", "UnsafeVariance")).build()
-        val TAnnotated = TypeVariableName("T").copy(annotations = listOf(unsafeVariance))
-        val getOrElseFunc = FunSpec.builder("getOrElse")
-            .addParameter("default", LambdaTypeName.get(returnType = TAnnotated))
-            .returns(T)
-            .beginControlFlow("return when (this)")
-            .addStatement("is Some -> value")
-            .addStatement("None -> default()")
-            .endControlFlow()
-            .build()
-
-        FileSpec.builder(packageName, "AlterOptional")
-            .addType(
-                TypeSpec.classBuilder("Optional")
-                    .addModifiers(KModifier.INTERNAL, KModifier.SEALED)
-                    .addTypeVariable(T)
-                    .addType(noneSpec)
-                    .addType(someSpec)
-                    .addType(companionSpec)
-                    .addFunction(getOrElseFunc)
-                    .build()
-            )
-            .build()
-            .writeTo(codeGenerator, Dependencies(false, containingFile))
-    }
-
     private data class ParamMeta(
         val name: String,
         val typeName: TypeName,
@@ -210,9 +146,9 @@ class AlterProcessor(
         val className = classDeclaration.simpleName.asString()
         val classTypeName = classDeclaration.toClassName()
         val builderClassName = ClassName(packageName, "${className}Builder")
-        val optionalClass = ClassName(packageName, "Optional")
-        val optionalNone = ClassName(packageName, "Optional", "None")
-        val optionalSome = ClassName(packageName, "Optional", "Some")
+        val optionalClass = ClassName("org.dynadoc", "Optional")
+        val optionalNone = ClassName("org.dynadoc", "Optional", "None")
+        val optionalSome = ClassName("org.dynadoc", "Optional", "Some")
 
         val paramMetas = parameters.map { param ->
             val resolvedType = param.type.resolve()
