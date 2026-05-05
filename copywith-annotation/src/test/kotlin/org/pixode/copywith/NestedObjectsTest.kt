@@ -11,62 +11,62 @@ class NestedObjectsTest {
     private val original = NestedObjects(alterable = scalars, nonAlterable = uri, nullable = null)
 
     @Test
-    fun `alter with no changes returns an equal object`() {
-        val result = original.alter {}
+    fun `copyWith with no changes returns an equal object`() {
+        val result = original.copyWith {}
         result shouldBe original
     }
 
     @Test
-    fun `alter modifies a field on the alterable nested object`() {
-        val result = original.alter { alterable.string = "world" }
+    fun `copyWith modifies a field on the alterable nested object`() {
+        val result = original.copyWith { alterable.string = "world" }
         result.alterable shouldBe Scalars("world", 42, null)
     }
 
     @Test
-    fun `alter replaces the alterable nested object`() {
+    fun `copyWith replaces the alterable nested object`() {
         val replacement = Scalars("new", 0, "tag")
-        val result = original.alter { alterable = replacement.toBuilder() }
+        val result = original.copyWith { alterable = replacement.toBuilder() }
         result.alterable shouldBe replacement
     }
 
     @Test
-    fun `alter sets the non-alterable field`() {
+    fun `copyWith sets the non-alterable field`() {
         val newUri = URI("http://other.com")
-        val result = original.alter { nonAlterable = newUri }
+        val result = original.copyWith { nonAlterable = newUri }
         result.nonAlterable shouldBe newUri
     }
 
     @Test
-    fun `alter does not change unmodified fields`() {
-        val result = original.alter { alterable.string = "world" }
+    fun `copyWith does not change unmodified fields`() {
+        val result = original.copyWith { alterable.string = "world" }
         result.nonAlterable shouldBe original.nonAlterable
     }
 
     // Nullable nested @Alter field
 
     @Test
-    fun `alter sets a null nullable field to a new builder`() {
-        val result = original.alter { nullable = Scalars("x", 1, null).toBuilder() }
+    fun `copyWith sets a null nullable field to a new builder`() {
+        val result = original.copyWith { nullable = Scalars("x", 1, null).toBuilder() }
         result.nullable shouldBe Scalars("x", 1, null)
     }
 
     @Test
-    fun `alter modifies a field on a non-null nullable nested object`() {
+    fun `copyWith modifies a field on a non-null nullable nested object`() {
         val withNullable = original.copy(nullable = Scalars("x", 1, null))
-        val result = withNullable.alter { nullable?.string = "updated" }
+        val result = withNullable.copyWith { nullable?.string = "updated" }
         result.nullable shouldBe Scalars("updated", 1, null)
     }
 
     @Test
-    fun `alter sets a non-null nullable field to null`() {
+    fun `copyWith sets a non-null nullable field to null`() {
         val withNullable = original.copy(nullable = Scalars("x", 1, null))
-        val result = withNullable.alter { nullable = null }
+        val result = withNullable.copyWith { nullable = null }
         result.nullable shouldBe null
     }
 
     @Test
-    fun `alter leaves a null nullable field as null when unset`() {
-        val result = original.alter { alterable.string = "world" }
+    fun `copyWith leaves a null nullable field as null when unset`() {
+        val result = original.copyWith { alterable.string = "world" }
         result.nullable shouldBe null
     }
 }
