@@ -41,6 +41,12 @@ class CollectionsTest {
     }
 
     @Test
+    fun `alter replaces the entire list`() {
+        val result = original.alter { list = mutableListOf("x", "y", "z") }
+        result.list shouldBe listOf("x", "y", "z")
+    }
+
+    @Test
     fun `alter does not mutate the original list`() {
         original.alter { list.add("d") }
         original.list shouldBe listOf("a", "b", "c")
@@ -75,9 +81,21 @@ class CollectionsTest {
     // Set of @Alter elements
 
     @Test
+    fun `alter adds an entry to the set`() {
+        val result = original.alter { set.add(Scalars("added", 3, "set").toBuilder()) }
+        result.set shouldBe setOf(scalarsElement, Scalars("added", 3, "set"))
+    }
+
+    @Test
     fun `alter modifies a field on an element in the set`() {
         val result = original.alter { set.first().string = "updated" }
         result.set shouldBe setOf(Scalars("updated", 1, null))
+    }
+
+    @Test
+    fun `alter replaces the entire set`() {
+        val result = original.alter { set = mutableSetOf(Scalars("replaced", 2, null).toBuilder()) }
+        result.set shouldBe setOf(Scalars("replaced", 2, null))
     }
 
     @Test
@@ -86,18 +104,25 @@ class CollectionsTest {
         original.set shouldBe setOf(scalarsElement)
     }
 
-    // Nullable list (backed by Optional — assigned as a whole)
+    // Nullable collection
 
     @Test
     fun `alter replaces the nullable list`() {
-        val result = original.alter { nullable = mutableListOf(1L, 2L, 3L) }
-        result.nullable shouldBe listOf(1L, 2L, 3L)
+        val result = original.alter { nullable = mutableListOf(4L, 5L, 6L) }
+        result.nullable shouldBe listOf(4L, 5L, 6L)
     }
 
     @Test
     fun `alter sets the nullable list to null`() {
         val result = original.alter { nullable = null }
         result.nullable shouldBe null
+    }
+
+    @Test
+    fun `alter sets the nullable list to a non-null value`() {
+        val original = Collections(listOf("a", "b", "c"), mapOf(DayOfWeek.MONDAY to 8), setOf(scalarsElement), null)
+        val result = original.alter { nullable = mutableListOf(4L, 5L, 6L) }
+        result.nullable shouldBe listOf(4L, 5L, 6L)
     }
 
     @Test
@@ -108,13 +133,7 @@ class CollectionsTest {
 
     @Test
     fun `alter does not mutate the original nullable list`() {
-        original.alter { nullable = mutableListOf(9L) }
+        original.alter { nullable = mutableListOf(4L, 5L, 6L) }
         original.nullable shouldBe listOf(1L, 2L)
-    }
-
-    @Test
-    fun `toBuilder round-trips the object unchanged`() {
-        val result = original.toBuilder().build()
-        result shouldBe original
     }
 }

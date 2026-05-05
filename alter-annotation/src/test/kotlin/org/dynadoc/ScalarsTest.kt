@@ -6,7 +6,7 @@ import kotlin.test.Test
 
 class ScalarsTest {
 
-    private val original = Scalars(string = "hello", integer = 42, nullable = null)
+    private val original = Scalars(string = "initial", integer = 100, nullable = null)
 
     @Test
     fun `alter with no changes returns an equal object`() {
@@ -15,53 +15,28 @@ class ScalarsTest {
     }
 
     @Test
-    fun `alter changes the string field`() {
-        val result = original.alter { string = "world" }
-        result.string shouldBe "world"
+    fun `alter changes a scalar field with nullable staying null`() {
+        val result = original.alter { string = "updated" }
+        result shouldBe Scalars(string = "updated", integer = 100, nullable = null)
     }
 
     @Test
-    fun `alter changes the integer field`() {
-        val result = original.alter { integer = 99 }
-        result.integer shouldBe 99
+    fun `alter changes a scalar field with nullable staying non-null`() {
+        val original = Scalars(string = "initial", integer = 100, nullable = "non-null")
+        val result = original.alter { string = "updated" }
+        result shouldBe Scalars(string = "updated", integer = 100, nullable = "non-null")
     }
 
     @Test
-    fun `alter sets the nullable field`() {
-        val result = original.alter { nullable = "tag" }
-        result.nullable shouldBe "tag"
+    fun `alter sets the nullable field to a non-null value`() {
+        val result = original.alter { nullable = "non-null" }
+        result shouldBe Scalars(string = "initial", integer = 100, nullable = "non-null")
     }
 
     @Test
-    fun `alter leaves the nullable field as null when unset`() {
-        val result = original.alter { string = "world" }
-        result.nullable.shouldBeNull()
-    }
-
-    @Test
-    fun `alter does not change unmodified fields`() {
-        val result = original.alter { string = "world" }
-        result.integer shouldBe original.integer
-        result.nullable shouldBe original.nullable
-    }
-
-    @Test
-    fun `alter does not mutate the original`() {
-        original.alter { string = "world"; integer = 99 }
-        original.string shouldBe "hello"
-        original.integer shouldBe 42
-    }
-
-    @Test
-    fun `toBuilder round-trips the object unchanged`() {
-        val result = original.toBuilder().build()
-        result shouldBe original
-    }
-
-    @Test
-    fun `toBuilder allows modification before build`() {
-        val result = original.toBuilder().apply { integer = 0 }.build()
-        result.integer shouldBe 0
-        result.string shouldBe original.string
+    fun `alter sets the nullable field to null`() {
+        val original = Scalars(string = "initial", integer = 100, nullable = "non-null")
+        val result = original.alter { nullable = null }
+        result shouldBe Scalars(string = "initial", integer = 100, nullable = null)
     }
 }

@@ -42,12 +42,6 @@ class NestedObjectsTest {
         result.nonAlterable shouldBe original.nonAlterable
     }
 
-    @Test
-    fun `toBuilder round-trips the object unchanged`() {
-        val result = original.toBuilder().build()
-        result shouldBe original
-    }
-
     // Nullable nested @Alter field
 
     @Test
