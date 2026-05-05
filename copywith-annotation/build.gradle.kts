@@ -25,7 +25,7 @@ publishing {
 
             pom {
                 name = "CopyWith"
-                description = ""
+                description = "A Kotlin annotation processor that generates a copyWith() function, supporting deeply nested modifications."
                 url = "https://github.com/pixode-org/copywith"
                 licenses {
                     license {
@@ -41,7 +41,7 @@ publishing {
                 }
                 scm {
                     connection = "scm:git:git://github.com/pixode-org/copywith.git"
-                    url = "https://github.com/pixode-org/copywith/tree/master"
+                    url = "https://github.com/pixode-org/copywith/tree/main"
                 }
             }
         }
