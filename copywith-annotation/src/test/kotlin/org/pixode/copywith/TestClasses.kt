@@ -1,4 +1,4 @@
-package org.dynadoc
+package org.pixode.copywith
 
 import java.net.URI
 import java.time.DayOfWeek

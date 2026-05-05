@@ -1,4 +1,4 @@
-package org.dynadoc
+package org.pixode.copywith
 
 sealed class Optional<out T> {
     inline fun getOrElse(default: () -> @UnsafeVariance T): T = when (this) {

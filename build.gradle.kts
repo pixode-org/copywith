@@ -1,7 +1,7 @@
 ﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 allprojects {
-    group = "org.dynadoc"
+    group = "org.pixode"
     version = "1.0.0"
 }
 

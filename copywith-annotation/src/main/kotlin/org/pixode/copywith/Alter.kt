@@ -1,4 +1,4 @@
-package org.dynadoc
+package org.pixode.copywith
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)

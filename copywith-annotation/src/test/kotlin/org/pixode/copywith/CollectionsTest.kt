@@ -1,4 +1,4 @@
-package org.dynadoc
+package org.pixode.copywith
 
 import io.kotest.matchers.shouldBe
 import java.time.DayOfWeek
