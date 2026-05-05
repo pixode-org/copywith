@@ -12,6 +12,6 @@ kotlin {
 dependencies {
     implementation(project(":alter-annotation"))
     implementation("com.google.devtools.ksp:symbol-processing-api:2.3.7")
-    implementation("com.squareup:kotlinpoet:1.18.1")
-    implementation("com.squareup:kotlinpoet-ksp:1.18.1")
+    implementation("com.squareup:kotlinpoet:2.3.0")
+    implementation("com.squareup:kotlinpoet-ksp:2.3.0")
 }
