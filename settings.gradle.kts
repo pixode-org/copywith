@@ -5,4 +5,3 @@ rootProject.name = "alter"
 
 include(":alter-annotation")
 include(":alter-processor")
-include(":alter-tests")
