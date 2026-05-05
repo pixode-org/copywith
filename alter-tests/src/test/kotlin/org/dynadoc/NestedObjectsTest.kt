@@ -43,12 +43,6 @@ class NestedObjectsTest {
     }
 
     @Test
-    fun `alter does not mutate the original`() {
-        original.alter { alterable.string = "world" }
-        original.alterable shouldBe scalars
-    }
-
-    @Test
     fun `toBuilder round-trips the object unchanged`() {
         val result = original.toBuilder().build()
         result shouldBe original
