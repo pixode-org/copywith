@@ -29,7 +29,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.ksp.writeTo
 
-class AlterProcessor(
+class CopyWithProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
 ) : SymbolProcessor {
@@ -51,7 +51,7 @@ class AlterProcessor(
         if (parameters.isEmpty()) return
         val packageName = classDeclaration.packageName.asString()
         val containingFile = classDeclaration.containingFile!!
-        generateBuilderAndAlter(classDeclaration, parameters, packageName, containingFile)
+        generateBuilderAndCopyWith(classDeclaration, parameters, packageName, containingFile)
     }
 
     private data class CollectionInfo(
@@ -134,7 +134,7 @@ class AlterProcessor(
         val elementBuilders: List<ClassName?>?,
     )
 
-    private fun generateBuilderAndAlter(
+    private fun generateBuilderAndCopyWith(
         classDeclaration: KSClassDeclaration,
         parameters: List<KSValueParameter>,
         packageName: String,
@@ -267,7 +267,7 @@ class AlterProcessor(
                 .build()
         )
 
-        val alterFunc = FunSpec.builder("alter")
+        val copyWithFunc = FunSpec.builder("copyWith")
             .receiver(classTypeName)
             .returns(classTypeName)
             .addParameter("block", LambdaTypeName.get(receiver = builderClassName, returnType = UNIT))
@@ -280,9 +280,9 @@ class AlterProcessor(
             .addCode("return %T(this)", builderClassName)
             .build()
 
-        FileSpec.builder(packageName, "${className}Alter")
+        FileSpec.builder(packageName, "${className}CopyWith")
             .addType(builderSpec.build())
-            .addFunction(alterFunc)
+            .addFunction(copyWithFunc)
             .addFunction(toBuilderFunc)
             .build()
             .writeTo(codeGenerator, Dependencies(false, containingFile))
