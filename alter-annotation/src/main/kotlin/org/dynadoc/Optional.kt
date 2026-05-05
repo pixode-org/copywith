@@ -6,6 +6,11 @@ sealed class Optional<out T> {
         None -> default()
     }
 
+    fun getOrThrow(): T = when (this) {
+        is Some -> value
+        None -> throw IllegalStateException("No value present")
+    }
+
     object None : Optional<Nothing>()
 
     data class Some<T>(val value: T) : Optional<T>()
