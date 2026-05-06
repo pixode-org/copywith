@@ -31,3 +31,8 @@ data class NestedObject(
     val nonAlterable: URI,
     val nullable: Scalar?,
 )
+
+@CopyWith
+data class ObjectCollection(
+    val list: List<Scalar>,
+)

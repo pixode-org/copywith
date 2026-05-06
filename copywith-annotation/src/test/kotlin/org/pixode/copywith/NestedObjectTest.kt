@@ -87,7 +87,7 @@ class NestedObjectTest {
         result shouldBe NestedObject(
             alterable = scalar,
             nonAlterable = uri,
-            nullable = Scalar(string = "updated", integer = 1, nullable = null)
+            nullable = Scalar(string = "updated", integer = 42, nullable = null)
         )
     }
 
