@@ -33,25 +33,25 @@ data class User(
 )
 ```
 
-This generates a `copyWith()` extension function and a `toBuilder()` extension function. Use `copyWith()` with a lambda to modify specific fields:
+This generates a `copyWith()` extension function. Use `copyWith()` with a lambda to modify specific fields:
 
 ```kotlin
-val original = User(name = "Alice", age = 30, email = null)
+val original = User(name = "Alice", age = 30, email = "alice@example.com")
 
 // Change one field
 val renamed = original.copyWith { name = "Bob" }
-// User(name="Bob", age=30, email=null)
+// User(name="Bob", age=30, email="alice@example.com")
+
+// Mutate fields based on their original values
+val updated = original.copyWith { age++ }
+// User(name="Alice", age=31, email="alice@example.com")
 
 // Change multiple fields
-val updated = original.copyWith {
-    age++
-    email = "bob@example.com"
+val noEmail = original.copyWith {
+    name = "Charlie"
+    email = null
 }
-// User(name="Bob", age=31, email="bob@example.com")
-
-// Set a nullable field to null
-val noEmail = original.copyWith { email = null }
-// User(name="Alice", age=30, email=null)
+// User(name="Charlie", age=30, email=null)
 ```
 
 ## Nested Objects
@@ -90,63 +90,46 @@ val relocated = original.copyWith {
 
 `copyWith()` exposes mutable versions of collection fields, so you can add, remove, or modify elements without replacing the entire collection. The original object is never mutated.
 
-### Lists
-
 ```kotlin
 @CopyWith
-data class Playlist(val title: String, val tracks: List<String>)
+data class Track(val artist: String, val title: String)
+
+@CopyWith
+data class Playlist(val name: String, val tracks: List<Track>)
 ```
 
 ```kotlin
-val original = Playlist(title = "Favorites", tracks = listOf("Song A", "Song B", "Song C"))
+val original = Playlist(
+    name = "Favorites",
+    tracks = listOf(Track("Daft Punk", "Get Lucky"), Track("Radiohead", "Karma Police"))
+)
 
-// Add an element
-val extended = original.copyWith { tracks.add("Song D") }
-// Playlist(title="Favorites", tracks=["Song A", "Song B", "Song C", "Song D"])
+// Remove a track
+val trimmed = original.copyWith {
+    tracks.removeAt(0)
+}
+// Playlist(name="Favorites", tracks=[Track("Radiohead", "Karma Police")])
 
-// Remove an element
-val trimmed = original.copyWith { tracks.remove("Song B") }
-// Playlist(title="Favorites", tracks=["Song A", "Song C"])
+// Modify a field on an existing track (deep mutation)
+val retitled = original.copyWith {
+    tracks[0].title = "Harder Better Faster Stronger"
+}
+// Playlist(name="Favorites", tracks=[Track("Daft Punk", "Harder Better Faster Stronger"), Track("Radiohead", "Karma Police")])
+
+// Add a track
+val extended = original.copyWith {
+    tracks.add(Track("Tame Impala", "The Less I Know The Better").toBuilder())
+}
+// Playlist(name="Favorites", tracks=[Track("Daft Punk", "Get Lucky"), Track("Radiohead", "Karma Police"), Track("Tame Impala", "The Less I Know The Better")])
 
 // Replace the entire list
-val replaced = original.copyWith { tracks = mutableListOf("New Song") }
-// Playlist(title="Favorites", tracks=["New Song"])
-
-// Original is unchanged
-original.tracks // ["Song A", "Song B", "Song C"]
+val replaced = original.copyWith {
+    tracks = mutableListOf(Track("Portishead", "Glory Box").toBuilder())
+}
+// Playlist(name="Favorites", tracks=[Track("Portishead", "Glory Box")])
 ```
 
-### Maps
-
-```kotlin
-@CopyWith
-data class Config(val settings: Map<String, Int>)
-```
-
-```kotlin
-val original = Config(settings = mapOf("timeout" to 30, "retries" to 3))
-
-// Add or update an entry
-val updated = original.copyWith { settings["timeout"] = 60 }
-// Config(settings={"timeout": 60, "retries": 3})
-
-// Remove an entry
-val reduced = original.copyWith { settings.remove("retries") }
-// Config(settings={"timeout": 30})
-```
-
-## Using `toBuilder()`
-
-`toBuilder()` creates a builder pre-populated with an object's current values. This is useful for passing builders as nested field values or for constructing objects incrementally:
-
-```kotlin
-val base = User(name = "Alice", age = 30, email = null)
-val builder = base.toBuilder()
-builder.name = "Alice Updated"
-builder.email = "alice@example.com"
-val result = builder.build()
-// User(name="Alice Updated", age=30, email="alice@example.com")
-```
+The same approach can be used with `Map`s and `Set`s.
 
 ## License
 
