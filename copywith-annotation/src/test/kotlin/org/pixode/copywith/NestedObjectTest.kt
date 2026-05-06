@@ -5,68 +5,100 @@ import java.net.URI
 import kotlin.test.Test
 
 class NestedObjectTest {
+    val scalar = Scalar(string = "hello", integer = 42, nullable = null)
+    val uri = URI("http://example.com")
 
-    private val uri = URI("http://example.com")
-    private val scalar = Scalar(string = "hello", integer = 42, nullable = null)
-    private val original = NestedObject(alterable = scalar, nonAlterable = uri, nullable = null)
+    // Non-nullable nested @CopyWith field
 
     @Test
     fun `copyWith with no changes returns an equal object`() {
-        val result = original.copyWith {}
-        result shouldBe original
+        val initial = NestedObject(alterable = scalar, nonAlterable = uri, nullable = null)
+        val result = initial.copyWith {}
+        result shouldBe NestedObject(
+            alterable = scalar,
+            nonAlterable = uri,
+            nullable = null
+        )
     }
 
     @Test
     fun `copyWith modifies a field on the alterable nested object`() {
-        val result = original.copyWith { alterable.string = "world" }
-        result.alterable shouldBe Scalar("world", 42, null)
+        val initial = NestedObject(alterable = scalar, nonAlterable = uri, nullable = null)
+        val result = initial.copyWith { alterable.string = "world" }
+        result shouldBe NestedObject(
+            alterable = Scalar(string = "world", integer = 42, nullable = null),
+            nonAlterable = uri,
+            nullable = null
+        )
     }
 
     @Test
-    fun `copyWith replaces the alterable nested object`() {
-        val replacement = Scalar("new", 0, "tag")
-        val result = original.copyWith { alterable = replacement.toBuilder() }
-        result.alterable shouldBe replacement
+    fun `copyWith replaces the alterable nested object with nullable field staying null`() {
+        val initial = NestedObject(alterable = scalar, nonAlterable = uri, nullable = null)
+        val result = initial.copyWith { alterable = Scalar("new", 0, "tag").toBuilder() }
+        result shouldBe NestedObject(
+            alterable = Scalar(string = "new", integer = 0, nullable = "tag"),
+            nonAlterable = uri,
+            nullable = null
+        )
     }
+
+    @Test
+    fun `copyWith replaces the alterable nested object with nullable field staying non-null`() {
+        val initial = NestedObject(alterable = scalar, nonAlterable = uri, nullable = scalar)
+        val result = initial.copyWith { alterable = Scalar("new", 0, "tag").toBuilder() }
+        result shouldBe NestedObject(
+            alterable = Scalar(string = "new", integer = 0, nullable = "tag"),
+            nonAlterable = uri,
+            nullable = scalar
+        )
+    }
+
+    // Nested non-@CopyWith field
 
     @Test
     fun `copyWith sets the non-alterable field`() {
-        val newUri = URI("http://other.com")
-        val result = original.copyWith { nonAlterable = newUri }
-        result.nonAlterable shouldBe newUri
-    }
-
-    @Test
-    fun `copyWith does not change unmodified fields`() {
-        val result = original.copyWith { alterable.string = "world" }
-        result.nonAlterable shouldBe original.nonAlterable
+        val initial = NestedObject(alterable = scalar, nonAlterable = uri, nullable = null)
+        val result = initial.copyWith { nonAlterable = URI("http://other.com") }
+        result shouldBe NestedObject(
+            alterable = scalar,
+            nonAlterable = URI("http://other.com"),
+            nullable = null
+        )
     }
 
     // Nullable nested @CopyWith field
 
     @Test
     fun `copyWith sets a null nullable field to a new builder`() {
-        val result = original.copyWith { nullable = Scalar("x", 1, null).toBuilder() }
-        result.nullable shouldBe Scalar("x", 1, null)
+        val initial = NestedObject(alterable = scalar, nonAlterable = uri, nullable = null)
+        val result = initial.copyWith { nullable = Scalar("x", 1, null).toBuilder() }
+        result shouldBe NestedObject(
+            alterable = scalar,
+            nonAlterable = uri,
+            nullable = Scalar(string = "x", integer = 1, nullable = null)
+        )
     }
 
     @Test
     fun `copyWith modifies a field on a non-null nullable nested object`() {
-        val withNullable = original.copy(nullable = Scalar("x", 1, null))
-        val result = withNullable.copyWith { nullable?.string = "updated" }
-        result.nullable shouldBe Scalar("updated", 1, null)
+        val initial = NestedObject(alterable = scalar, nonAlterable = uri, nullable = scalar)
+        val result = initial.copyWith { nullable?.string = "updated" }
+        result shouldBe NestedObject(
+            alterable = scalar,
+            nonAlterable = uri,
+            nullable = Scalar(string = "updated", integer = 1, nullable = null)
+        )
     }
 
     @Test
     fun `copyWith sets a non-null nullable field to null`() {
-        val withNullable = original.copy(nullable = Scalar("x", 1, null))
-        val result = withNullable.copyWith { nullable = null }
-        result.nullable shouldBe null
-    }
-
-    @Test
-    fun `copyWith leaves a null nullable field as null when unset`() {
-        val result = original.copyWith { alterable.string = "world" }
-        result.nullable shouldBe null
+        val initial = NestedObject(alterable = scalar, nonAlterable = uri, nullable = scalar)
+        val result = initial.copyWith { nullable = null }
+        result shouldBe NestedObject(
+            alterable = scalar,
+            nonAlterable = uri,
+            nullable = null
+        )
     }
 }

@@ -6,131 +6,155 @@ import kotlin.test.Test
 
 class CollectionTest {
 
-    private val scalarElement = Scalar(string = "x", integer = 1, nullable = null)
-    private val listOriginal = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
-    private val mapOriginal = MapCollection(map = mapOf(DayOfWeek.MONDAY to 8))
-    private val setOriginal = SetCollection(set = setOf(scalarElement))
-
     @Test
     fun `copyWith with no changes returns an equal object`() {
-        val result = listOriginal.copyWith {}
-        result shouldBe listOriginal
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        val result = initial.copyWith {}
+        result shouldBe ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
     }
 
     // List
 
     @Test
     fun `copyWith adds an element to the list`() {
-        val result = listOriginal.copyWith { list.add("d") }
-        result.list shouldBe listOf("a", "b", "c", "d")
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        val result = initial.copyWith { list.add("d") }
+        result shouldBe ListCollection(list = listOf("a", "b", "c", "d"), nullable = listOf(1L, 2L))
     }
 
     @Test
     fun `copyWith removes an element from the list`() {
-        val result = listOriginal.copyWith { list.remove("b") }
-        result.list shouldBe listOf("a", "c")
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        val result = initial.copyWith { list.remove("b") }
+        result shouldBe ListCollection(list = listOf("a", "c"), nullable = listOf(1L, 2L))
     }
 
     @Test
     fun `copyWith replaces an element in the list`() {
-        val result = listOriginal.copyWith { list[0] = "z" }
-        result.list shouldBe listOf("z", "b", "c")
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        val result = initial.copyWith { list[0] = "z" }
+        result shouldBe ListCollection(list = listOf("z", "b", "c"), nullable = listOf(1L, 2L))
     }
 
     @Test
     fun `copyWith replaces the entire list`() {
-        val result = listOriginal.copyWith { list = mutableListOf("x", "y", "z") }
-        result.list shouldBe listOf("x", "y", "z")
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        val result = initial.copyWith { list = mutableListOf("x", "y", "z") }
+        result shouldBe ListCollection(list = listOf("x", "y", "z"), nullable = listOf(1L, 2L))
     }
 
     @Test
     fun `copyWith does not mutate the original list`() {
-        listOriginal.copyWith { list.add("d") }
-        listOriginal.list shouldBe listOf("a", "b", "c")
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        initial.copyWith { list.add("d") }
+        initial shouldBe ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
     }
 
     // Map
 
     @Test
     fun `copyWith adds an entry to the map`() {
-        val result = mapOriginal.copyWith { map[DayOfWeek.TUESDAY] = 9 }
-        result.map shouldBe mapOf(DayOfWeek.MONDAY to 8, DayOfWeek.TUESDAY to 9)
+        val initial = MapCollection(map = mapOf(DayOfWeek.MONDAY to 8))
+        val result = initial.copyWith { map[DayOfWeek.TUESDAY] = 9 }
+        result shouldBe MapCollection(map = mapOf(DayOfWeek.MONDAY to 8, DayOfWeek.TUESDAY to 9))
     }
 
     @Test
     fun `copyWith modifies an existing entry in the map`() {
-        val result = mapOriginal.copyWith { map[DayOfWeek.MONDAY] = 10 }
-        result.map shouldBe mapOf(DayOfWeek.MONDAY to 10)
+        val initial = MapCollection(map = mapOf(DayOfWeek.MONDAY to 8))
+        val result = initial.copyWith { map[DayOfWeek.MONDAY] = 10 }
+        result shouldBe MapCollection(map = mapOf(DayOfWeek.MONDAY to 10))
     }
 
     @Test
     fun `copyWith replaces the entire map`() {
-        val result = mapOriginal.copyWith { map = mutableMapOf(DayOfWeek.FRIDAY to 5) }
-        result.map shouldBe mapOf(DayOfWeek.FRIDAY to 5)
+        val initial = MapCollection(map = mapOf(DayOfWeek.MONDAY to 8))
+        val result = initial.copyWith { map = mutableMapOf(DayOfWeek.FRIDAY to 5) }
+        result shouldBe MapCollection(map = mapOf(DayOfWeek.FRIDAY to 5))
     }
 
     @Test
     fun `copyWith does not mutate the original map`() {
-        mapOriginal.copyWith { map[DayOfWeek.TUESDAY] = 9 }
-        mapOriginal.map shouldBe mapOf(DayOfWeek.MONDAY to 8)
+        val initial = MapCollection(map = mapOf(DayOfWeek.MONDAY to 8))
+        initial.copyWith { map[DayOfWeek.TUESDAY] = 9 }
+        initial shouldBe MapCollection(map = mapOf(DayOfWeek.MONDAY to 8))
     }
 
     // Set of @CopyWith elements
 
     @Test
     fun `copyWith adds an entry to the set`() {
-        val result = setOriginal.copyWith { set.add(Scalar("added", 3, "set").toBuilder()) }
-        result.set shouldBe setOf(scalarElement, Scalar("added", 3, "set"))
+        val initial = SetCollection(set = setOf(Scalar(string = "x", integer = 1, nullable = null)))
+        val result = initial.copyWith { set.add(Scalar("added", 3, "set").toBuilder()) }
+        result shouldBe SetCollection(
+            set = setOf(
+                Scalar(string = "x", integer = 1, nullable = null),
+                Scalar(string = "added", integer = 3, nullable = "set")
+            )
+        )
     }
 
     @Test
     fun `copyWith modifies a field on an element in the set`() {
-        val result = setOriginal.copyWith { set.first().string = "updated" }
-        result.set shouldBe setOf(Scalar("updated", 1, null))
+        val initial = SetCollection(set = setOf(Scalar(string = "x", integer = 1, nullable = null)))
+        val result = initial.copyWith { set.first().string = "updated" }
+        result shouldBe SetCollection(
+            set = setOf(Scalar(string = "updated", integer = 1, nullable = null))
+        )
     }
 
     @Test
     fun `copyWith replaces the entire set`() {
-        val result = setOriginal.copyWith { set = mutableSetOf(Scalar("replaced", 2, null).toBuilder()) }
-        result.set shouldBe setOf(Scalar("replaced", 2, null))
+        val initial = SetCollection(set = setOf(Scalar(string = "x", integer = 1, nullable = null)))
+        val result = initial.copyWith { set = mutableSetOf(Scalar("replaced", 2, null).toBuilder()) }
+        result shouldBe SetCollection(
+            set = setOf(Scalar(string = "replaced", integer = 2, nullable = null))
+        )
     }
 
     @Test
     fun `copyWith does not mutate the original set`() {
-        setOriginal.copyWith { set.first().string = "updated" }
-        setOriginal.set shouldBe setOf(scalarElement)
+        val initial = SetCollection(set = setOf(Scalar(string = "x", integer = 1, nullable = null)))
+        initial.copyWith { set.first().string = "updated" }
+        initial shouldBe SetCollection(
+            set = setOf(Scalar(string = "x", integer = 1, nullable = null))
+        )
     }
 
     // Nullable collection
 
     @Test
     fun `copyWith replaces the nullable list`() {
-        val result = listOriginal.copyWith { nullable = mutableListOf(4L, 5L, 6L) }
-        result.nullable shouldBe listOf(4L, 5L, 6L)
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        val result = initial.copyWith { nullable = mutableListOf(4L, 5L, 6L) }
+        result shouldBe ListCollection(list = listOf("a", "b", "c"), nullable = listOf(4L, 5L, 6L))
     }
 
     @Test
     fun `copyWith sets the nullable list to null`() {
-        val result = listOriginal.copyWith { nullable = null }
-        result.nullable shouldBe null
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        val result = initial.copyWith { nullable = null }
+        result shouldBe ListCollection(list = listOf("a", "b", "c"), nullable = null)
     }
 
     @Test
     fun `copyWith sets the nullable list to a non-null value`() {
-        val original = ListCollection(listOf("a", "b", "c"), null)
-        val result = original.copyWith { nullable = mutableListOf(4L, 5L, 6L) }
-        result.nullable shouldBe listOf(4L, 5L, 6L)
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = null)
+        val result = initial.copyWith { nullable = mutableListOf(4L, 5L, 6L) }
+        result shouldBe ListCollection(list = listOf("a", "b", "c"), nullable = listOf(4L, 5L, 6L))
     }
 
     @Test
     fun `copyWith adds an element to the nullable list`() {
-        val result = listOriginal.copyWith { nullable?.add(3L) }
-        result.nullable shouldBe listOf(1L, 2L, 3L)
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        val result = initial.copyWith { nullable?.add(3L) }
+        result shouldBe ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L, 3L))
     }
 
     @Test
     fun `copyWith does not mutate the original nullable list`() {
-        listOriginal.copyWith { nullable = mutableListOf(4L, 5L, 6L) }
-        listOriginal.nullable shouldBe listOf(1L, 2L)
+        val initial = ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
+        initial.copyWith { nullable = mutableListOf(4L, 5L, 6L) }
+        initial shouldBe ListCollection(list = listOf("a", "b", "c"), nullable = listOf(1L, 2L))
     }
 }
