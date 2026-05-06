@@ -44,11 +44,10 @@ val renamed = original.copyWith { name = "Bob" }
 
 // Change multiple fields
 val updated = original.copyWith {
-    name = "Charlie"
-    age = 25
-    email = "charlie@example.com"
+    age++
+    email = "bob@example.com"
 }
-// User(name="Charlie", age=25, email="charlie@example.com")
+// User(name="Bob", age=31, email="bob@example.com")
 
 // Set a nullable field to null
 val noEmail = original.copyWith { email = null }

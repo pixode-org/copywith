@@ -4,23 +4,30 @@ import java.net.URI
 import java.time.DayOfWeek
 
 @CopyWith
-data class Scalars(
+data class Scalar(
     val string: String,
     val integer: Int,
-    val nullable: String?
+    val nullable: String?,
 )
 
 @CopyWith
-data class Collections(
+data class ListCollection(
     val list: List<String>,
-    val map: Map<DayOfWeek, Int>,
-    val set: Set<Scalars>,
     val nullable: List<Long>?,
 )
 
 @CopyWith
-data class NestedObjects(
-    val alterable: Scalars,
+data class MapCollection(
+    val map: Map<DayOfWeek, Int>,
+)
+@CopyWith
+data class SetCollection(
+    val set: Set<Scalar>,
+)
+
+@CopyWith
+data class NestedObject(
+    val alterable: Scalar,
     val nonAlterable: URI,
-    val nullable: Scalars?,
+    val nullable: Scalar?,
 )
