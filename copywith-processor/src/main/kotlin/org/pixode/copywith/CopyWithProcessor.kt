@@ -23,10 +23,12 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.STAR
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.UNIT
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
+import com.squareup.kotlinpoet.ksp.toTypeVariableName
 import com.squareup.kotlinpoet.ksp.writeTo
 
 class CopyWithProcessor(
@@ -147,6 +149,11 @@ class CopyWithProcessor(
         val optionalClass = ClassName("org.pixode.copywith", "Optional")
         val optionalSome = ClassName("org.pixode.copywith", "Optional", "Some")
 
+        // Invariant type params: strip declaration-site variance so the builder can use T in both positions.
+        val typeParams = classDeclaration.typeParameters.map { it.toTypeVariableName(typeParamResolver).let { tv -> TypeVariableName(tv.name, tv.bounds) } }
+        val parameterizedClassType: TypeName = if (typeParams.isEmpty()) classTypeName else classTypeName.parameterizedBy(typeParams)
+        val parameterizedBuilderType: TypeName = if (typeParams.isEmpty()) builderClassName else builderClassName.parameterizedBy(typeParams)
+
         val paramMetas = parameters.map { param ->
             val resolvedType = param.type.resolve()
             val isNullable = resolvedType.isMarkedNullable
@@ -167,8 +174,9 @@ class CopyWithProcessor(
         }
 
         val builderSpec = TypeSpec.classBuilder("${className}Builder")
-            .primaryConstructor(FunSpec.constructorBuilder().addParameter("original", classTypeName).build())
-            .addProperty(PropertySpec.builder("original", classTypeName).addModifiers(KModifier.PRIVATE).initializer("original").build())
+            .addTypeVariables(typeParams)
+            .primaryConstructor(FunSpec.constructorBuilder().addParameter("original", parameterizedClassType).build())
+            .addProperty(PropertySpec.builder("original", parameterizedClassType).addModifiers(KModifier.PRIVATE).initializer("original").build())
 
         paramMetas.forEach { (name, typeName, isNullable, info, mutableType, nestedBuilder, elementBuilders) ->
             val fieldName = "${name}Field"
@@ -240,7 +248,7 @@ class CopyWithProcessor(
 
         builderSpec.addFunction(
             FunSpec.builder("build")
-                .returns(classTypeName)
+                .returns(parameterizedClassType)
                 .addCode(
                     CodeBlock.builder()
                         .add("return %T(\n", classTypeName)
@@ -268,15 +276,17 @@ class CopyWithProcessor(
         )
 
         val copyWithFunc = FunSpec.builder("copyWith")
-            .receiver(classTypeName)
-            .returns(classTypeName)
-            .addParameter("block", LambdaTypeName.get(receiver = builderClassName, returnType = UNIT))
+            .addTypeVariables(typeParams)
+            .receiver(parameterizedClassType)
+            .returns(parameterizedClassType)
+            .addParameter("block", LambdaTypeName.get(receiver = parameterizedBuilderType, returnType = UNIT))
             .addCode("return %T(this).apply(block).build()", builderClassName)
             .build()
 
         val toBuilderFunc = FunSpec.builder("toBuilder")
-            .receiver(classTypeName)
-            .returns(builderClassName)
+            .addTypeVariables(typeParams)
+            .receiver(parameterizedClassType)
+            .returns(parameterizedBuilderType)
             .addCode("return %T(this)", builderClassName)
             .build()
 
