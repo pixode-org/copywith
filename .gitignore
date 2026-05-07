@@ -15,6 +15,7 @@ publish/
 *.iml
 *.ipr
 out/
+.run
 !**/src/main/**/out/
 !**/src/test/**/out/
 
