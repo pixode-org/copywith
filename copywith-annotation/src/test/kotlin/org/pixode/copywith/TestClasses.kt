@@ -36,3 +36,14 @@ data class NestedObject(
 data class ObjectCollection(
     val list: List<Scalar>,
 )
+
+open class Base(val integer: Int) {
+    override fun equals(other: Any?) = other is Base && integer == other.integer
+    override fun hashCode() = integer
+}
+
+@CopyWith
+data class Generics<out T : Base, U>(
+    val valueT: T,
+    val valueU: U?,
+)
