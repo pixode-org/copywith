@@ -47,3 +47,9 @@ data class Generics<out T : Base, U>(
     val valueT: T,
     val valueU: U?,
 )
+
+@CopyWith
+data class Mutable(
+    var string: String,
+    val integer: Int,
+)
