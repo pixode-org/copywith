@@ -19,20 +19,20 @@ data class NullableFields(
 
 @CopyWith
 data class ListFields(
-    val simpleList: List<String> = emptyList(),
-    val copyableList: List<Nested> = emptyList(),
+    val simpleList: List<String>,
+    val copyableList: List<Nested>,
 )
 
 @CopyWith
 data class MapFields(
-    val simpleList: Map<DayOfWeek, Int> = emptyMap(),
-    val copyableList: Map<String, Nested> = emptyMap(),
+    val simpleMap: Map<DayOfWeek, Int>,
+    val copyableMap: Map<String, Nested>,
 )
 
 @CopyWith
 data class SetFields(
-    val simpleSet: Set<DayOfWeek> = emptySet(),
-    val copyableSet: Set<Nested> = emptySet(),
+    val simpleSet: Set<DayOfWeek>,
+    val copyableSet: Set<Nested>,
 )
 
 open class Base(val integer: Int) {
