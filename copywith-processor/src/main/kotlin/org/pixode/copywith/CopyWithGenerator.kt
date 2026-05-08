@@ -358,6 +358,17 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
         )
 
         add(
+            FunSpec.builder("set")
+                .addModifiers(KModifier.OPERATOR)
+                .addTypeVariables(listOf(kTypeVar) + typeParams)
+                .receiver(mutableMapClass.parameterizedBy(kTypeVar, parameterizedBuilderType))
+                .addParameter("key", kTypeVar)
+                .addParameter("value", parameterizedClassType)
+                .addCode("return set(key, %T(value))", builderClassName)
+                .build()
+        )
+
+        add(
             FunSpec.builder("put")
                 .addTypeVariables(listOf(kTypeVar) + typeParams)
                 .receiver(mutableMapClass.parameterizedBy(kTypeVar, parameterizedBuilderType))

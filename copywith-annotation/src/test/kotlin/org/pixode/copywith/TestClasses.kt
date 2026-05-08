@@ -53,6 +53,15 @@ data class MutableClass(
 )
 
 @CopyWith
+data class ReservedKeywordsFields(
+    val `in`: String,
+    val `return`: String,
+    val `val`: String,
+    val `true`: String,
+    val `name with spaces`: String,
+)
+
+@CopyWith
 data class Nested(
     val string: String,
     val integer: Int,
