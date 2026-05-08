@@ -5,10 +5,12 @@ import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSValueParameter
+import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -17,6 +19,7 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.UNIT
+import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeVariableName
@@ -82,9 +85,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                     CodeBlock.builder()
                         .add("return %T(\n", classTypeName)
                         .indent()
-                        .apply {
-                            parameters.forEach { addConstructorArgument(it) }
-                        }
+                        .apply { parameters.forEach { addConstructorArgument(it) } }
                         .unindent()
                         .add(")")
                         .build()
@@ -92,25 +93,16 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .build()
         )
 
-        val copyWithFunc = FunSpec.builder("copyWith")
-            .addTypeVariables(typeParams)
-            .receiver(parameterizedClassType)
-            .returns(parameterizedClassType)
-            .addParameter("block", LambdaTypeName.get(receiver = parameterizedBuilderType, returnType = UNIT))
-            .addCode("return %T(this).apply(block).build()", builderClassName)
-            .build()
-
-        val toBuilderFunc = FunSpec.builder("toBuilder")
-            .addTypeVariables(typeParams)
-            .receiver(parameterizedClassType)
-            .returns(parameterizedBuilderType)
-            .addCode("return %T(this)", builderClassName)
-            .build()
+        val functionSpecs = getExtensionFunctions(
+            typeParams = typeParams,
+            parameterizedClassType = parameterizedClassType,
+            parameterizedBuilderType = parameterizedBuilderType,
+            builderClassName = builderClassName
+        )
 
         FileSpec.builder(packageName, "${className}CopyWith")
             .addType(builderSpec.build())
-            .addFunction(copyWithFunc)
-            .addFunction(toBuilderFunc)
+            .apply { functionSpecs.forEach { addFunction(it) } }
             .build()
             .writeTo(codeGenerator, Dependencies(false, containingFile))
     }
@@ -299,5 +291,93 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
 
             else -> CodeBlock.of("%N.getOrThrow()${dot}%N()", fieldName, info.toImmutable)
         }
+    }
+
+    private fun getExtensionFunctions(
+        typeParams: List<TypeVariableName>,
+        parameterizedClassType: TypeName,
+        parameterizedBuilderType: TypeName,
+        builderClassName: ClassName
+    ): List<FunSpec> = buildList {
+        add(
+            FunSpec.builder("copyWith")
+                .addTypeVariables(typeParams)
+                .receiver(parameterizedClassType)
+                .returns(parameterizedClassType)
+                .addParameter("block", LambdaTypeName.get(receiver = parameterizedBuilderType, returnType = UNIT))
+                .addCode("return %T(this).apply(block).build()", builderClassName)
+                .build()
+        )
+
+        add(
+            FunSpec.builder("toBuilder")
+                .addTypeVariables(typeParams)
+                .receiver(parameterizedClassType)
+                .returns(parameterizedBuilderType)
+                .addCode("return %T(this)", builderClassName)
+                .build()
+        )
+
+        val mutableCollectionClass = ClassName("kotlin.collections", "MutableCollection")
+        val collectionClass = ClassName("kotlin.collections", "Collection")
+        val mutableListClass = ClassName("kotlin.collections", "MutableList")
+        val mutableMapClass = ClassName("kotlin.collections", "MutableMap")
+        val mapClass = ClassName("kotlin.collections", "Map")
+        val kTypeVar = TypeVariableName("K")
+
+        add(
+            FunSpec.builder("add")
+                .addTypeVariables(typeParams)
+                .receiver(mutableCollectionClass.parameterizedBy(parameterizedBuilderType))
+                .addParameter("element", parameterizedClassType)
+                .returns(BOOLEAN)
+                .addCode("return add(%T(element))", builderClassName)
+                .build()
+        )
+
+        add(
+            FunSpec.builder("addAll")
+                .addTypeVariables(typeParams)
+                .receiver(mutableCollectionClass.parameterizedBy(parameterizedBuilderType))
+                .addParameter("elements", collectionClass.parameterizedBy(parameterizedClassType))
+                .returns(BOOLEAN)
+                .addCode("return addAll(elements.map { %T(it) })", builderClassName)
+                .build()
+        )
+
+        add(
+            FunSpec.builder("set")
+                .addModifiers(KModifier.OPERATOR)
+                .addTypeVariables(typeParams)
+                .receiver(mutableListClass.parameterizedBy(parameterizedBuilderType))
+                .addParameter("index", INT)
+                .addParameter("element", parameterizedClassType)
+                .returns(parameterizedBuilderType)
+                .addCode("return set(index, %T(element))", builderClassName)
+                .build()
+        )
+
+        add(
+            FunSpec.builder("put")
+                .addTypeVariables(listOf(kTypeVar) + typeParams)
+                .receiver(mutableMapClass.parameterizedBy(kTypeVar, parameterizedBuilderType))
+                .addParameter("key", kTypeVar)
+                .addParameter("value", parameterizedClassType)
+                .returns(parameterizedBuilderType.copy(nullable = true))
+                .addCode("return put(key, %T(value))", builderClassName)
+                .build()
+        )
+
+        add(
+            FunSpec.builder("putAll")
+                .addTypeVariables(listOf(kTypeVar) + typeParams)
+                .receiver(mutableMapClass.parameterizedBy(kTypeVar, parameterizedBuilderType))
+                .addParameter(
+                    "from",
+                    mapClass.parameterizedBy(WildcardTypeName.producerOf(kTypeVar), parameterizedClassType)
+                )
+                .addCode("return putAll(from.mapValues { (_, v) -> %T(v) })", builderClassName)
+                .build()
+        )
     }
 }
