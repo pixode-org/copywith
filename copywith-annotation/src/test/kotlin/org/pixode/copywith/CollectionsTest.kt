@@ -54,7 +54,7 @@ class CollectionsTest {
         )
         val result = initial.copyWith {
             simpleList.removeAt(1)
-            copyableList.removeAt(0)
+            copyableList.removeIf { it.string == "aaa" }
         }
         result shouldBe ListFields(
             simpleList = listOf("a", "c"),
@@ -253,6 +253,22 @@ class CollectionsTest {
         result shouldBe SetFields(
             simpleSet = setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY),
             copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3), Nested("ddd", 4))
+        )
+    }
+
+    @Test
+    fun `copyWith removes an element from the set`() {
+        val initial = SetFields(
+            simpleSet = setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY),
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+        )
+        val result = initial.copyWith {
+            simpleSet.remove(DayOfWeek.MONDAY)
+            copyableSet.removeIf { it.string == "aaa" }
+        }
+        result shouldBe SetFields(
+            simpleSet = setOf(DayOfWeek.TUESDAY),
+            copyableSet = setOf(Nested("bbb", 2))
         )
     }
 
