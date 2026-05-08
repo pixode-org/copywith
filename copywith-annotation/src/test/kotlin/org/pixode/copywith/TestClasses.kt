@@ -33,8 +33,18 @@ data class NestedObject(
 )
 
 @CopyWith
-data class ObjectCollection(
-    val list: List<Scalar>,
+data class ObjectList(
+    val list: List<Scalar>
+)
+
+@CopyWith
+data class ObjectSet(
+    val set: Set<Scalar>
+)
+
+@CopyWith
+data class ObjectMap(
+    val map: Map<String, Scalar>
 )
 
 open class Base(val integer: Int) {
