@@ -1,50 +1,38 @@
 package org.pixode.copywith
 
-import java.net.URI
 import java.time.DayOfWeek
 
 @CopyWith
-data class Scalar(
+data class MultipleFields(
     val string: String,
-    val integer: Int,
-    val nullable: String?,
+    val enum: DayOfWeek,
+    val copyable: Nested,
 )
 
 @CopyWith
-data class ListCollection(
-    val list: List<String>,
-    val nullable: List<Long>?,
+data class NullableFields(
+    val nonNullable: DayOfWeek,
+    val string: String?,
+    val collection: List<Int>?,
+    val copyable: Nested?,
 )
 
 @CopyWith
-data class MapCollection(
-    val map: Map<DayOfWeek, Int>,
-)
-@CopyWith
-data class SetCollection(
-    val set: Set<Scalar>,
+data class ListFields(
+    val simpleList: List<String> = emptyList(),
+    val copyableList: List<Nested> = emptyList(),
 )
 
 @CopyWith
-data class NestedObject(
-    val alterable: Scalar,
-    val nonAlterable: URI,
-    val nullable: Scalar?,
+data class MapFields(
+    val simpleList: Map<DayOfWeek, Int> = emptyMap(),
+    val copyableList: Map<String, Nested> = emptyMap(),
 )
 
 @CopyWith
-data class ObjectList(
-    val list: List<Scalar>
-)
-
-@CopyWith
-data class ObjectSet(
-    val set: Set<Scalar>
-)
-
-@CopyWith
-data class ObjectMap(
-    val map: Map<String, Scalar>
+data class SetFields(
+    val simpleSet: Set<DayOfWeek> = emptySet(),
+    val copyableSet: Set<Nested> = emptySet(),
 )
 
 open class Base(val integer: Int) {
@@ -53,13 +41,19 @@ open class Base(val integer: Int) {
 }
 
 @CopyWith
-data class Generics<out T : Base, U>(
+data class GenericClass<out T : Base, U>(
     val valueT: T,
     val valueU: U?,
 )
 
 @CopyWith
-data class Mutable(
+data class MutableClass(
     var string: String,
+    val integer: Int,
+)
+
+@CopyWith
+data class Nested(
+    val string: String,
     val integer: Int,
 )
