@@ -91,4 +91,25 @@ class CopyWithTest {
         result shouldBe MutableClass(string = "updated", integer = 100)
         initial shouldBe MutableClass(string = "initial", integer = 100)
     }
+
+    @Test
+    fun `copyWith generates fields with reserved names`() {
+        val initial = ReservedKeywordsFields(
+            `in` = "in",
+            `return` = "return",
+            `val` = "val",
+            `true` = "true",
+            `name with spaces` = "name with spaces",
+        )
+        val result = initial.copyWith {
+            `name with spaces` = "updated"
+        }
+        result shouldBe ReservedKeywordsFields(
+            `in` = "in",
+            `return` = "return",
+            `val` = "val",
+            `true` = "true",
+            `name with spaces` = "updated",
+        )
+    }
 }

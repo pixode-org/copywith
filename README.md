@@ -118,7 +118,7 @@ val retitled = original.copyWith {
 
 // Add a track
 val extended = original.copyWith {
-    tracks.add(Track("Tame Impala", "The Less I Know The Better").toBuilder())
+    tracks.add(Track("Tame Impala", "The Less I Know The Better"))
 }
 // Playlist(name="Favorites", tracks=[Track("Daft Punk", "Get Lucky"), Track("Radiohead", "Karma Police"), Track("Tame Impala", "The Less I Know The Better")])
 

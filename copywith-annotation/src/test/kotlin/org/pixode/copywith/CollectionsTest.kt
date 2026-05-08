@@ -175,7 +175,7 @@ class CollectionsTest {
         )
         val result = initial.copyWith {
             simpleMap[DayOfWeek.TUESDAY] = 99
-            copyableMap["A"] = Nested("ccc", 3).toBuilder()
+            copyableMap["A"] = Nested("ccc", 3)
         }
         result shouldBe MapFields(
             simpleMap = mapOf(DayOfWeek.MONDAY to 1, DayOfWeek.TUESDAY to 99),
@@ -188,7 +188,7 @@ class CollectionsTest {
     }
 
     @Test
-    fun `copyWith modifies a value in the map and does not mutate the original map`() {
+    fun `copyWith modifies an entry in the map and does not mutate the original map`() {
         val initial = MapFields(
             simpleMap = mapOf(DayOfWeek.MONDAY to 1, DayOfWeek.TUESDAY to 2),
             copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
