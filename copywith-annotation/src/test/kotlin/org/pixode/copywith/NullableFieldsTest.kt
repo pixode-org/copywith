@@ -51,7 +51,7 @@ class NullableFieldsTest {
         )
         val result = initial.copyWith {
             string = "updated"
-            collection = listOf(1, 2, 3).toMutableList()
+            collection = mutableListOf(1, 2, 3)
             copyable = Nested("aaa", 1).toBuilder()
         }
         result shouldBe NullableFields(

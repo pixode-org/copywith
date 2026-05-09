@@ -69,26 +69,38 @@ data class Person(val name: String, val address: Address)
 ```kotlin
 val original = Person(
     name = "Alice",
-    address = Address(street = "123 Main St", city = "Springfield")
+    address = Address(street = "11 Baggot Street", city = "Dublin")
 )
 
 // Modify a nested field directly
 val moved = original.copyWith {
-    address.city = "Shelbyville"
+    address.street = "12 O'Connell Street"
 }
-// Person(name="Alice", address=Address(street="123 Main St", city="Shelbyville"))
+// Person(
+//   name="Alice",
+//   address=Address(
+//     street="12 O'Connell Street",
+//     city="Dublin"
+//   )
+// )
 
 // Replace the nested object entirely using toBuilder()
-val newAddress = Address(street = "456 Elm St", city = "Capital City")
+val newAddress = Address(street = "13 Brick Lane", city = "London")
 val relocated = original.copyWith {
     address = newAddress.toBuilder()
 }
-// Person(name="Alice", address=Address(street="456 Elm St", city="Capital City"))
+// Person(
+//   name="Alice",
+//   address=Address(
+//     street="13 Brick Lane",
+//     city="London"
+//   )
+// )
 ```
 
 ## Collections
 
-`copyWith()` exposes mutable versions of collection fields, so you can add, remove, or modify elements without replacing the entire collection. The original object is never mutated.
+`copyWith()` exposes mutable versions of collection fields (`List`, `Map` and `Set`), so you can add, remove, or modify elements without replacing the entire collection. The original object is never mutated.
 
 ```kotlin
 @CopyWith
@@ -104,32 +116,53 @@ val original = Playlist(
     tracks = listOf(Track("Daft Punk", "Get Lucky"), Track("Radiohead", "Karma Police"))
 )
 
+// Add a track
+val extended = original.copyWith {
+    tracks.add(Track("Oasis", "Wonderwall"))
+}
+// Playlist(
+//   name="Favorites",
+//   tracks=[
+//     Track("Daft Punk", "Get Lucky"),
+//     Track("Radiohead", "Karma Police"),
+//     Track("Oasis", "Wonderwall")
+//   ]
+// )
+
 // Remove a track
 val trimmed = original.copyWith {
-    tracks.removeAt(0)
+    tracks.removeIf { it.artist == "Daft Punk" }
 }
-// Playlist(name="Favorites", tracks=[Track("Radiohead", "Karma Police")])
+// Playlist(
+//   name="Favorites",
+//   tracks=[
+//     Track("Radiohead", "Karma Police")
+//   ]
+// )
 
 // Modify a field on an existing track (deep mutation)
 val retitled = original.copyWith {
-    tracks[0].title = "Harder Better Faster Stronger"
+    tracks[0].title = "One More Time"
 }
-// Playlist(name="Favorites", tracks=[Track("Daft Punk", "Harder Better Faster Stronger"), Track("Radiohead", "Karma Police")])
-
-// Add a track
-val extended = original.copyWith {
-    tracks.add(Track("Tame Impala", "The Less I Know The Better"))
-}
-// Playlist(name="Favorites", tracks=[Track("Daft Punk", "Get Lucky"), Track("Radiohead", "Karma Police"), Track("Tame Impala", "The Less I Know The Better")])
+// Playlist(
+//   name="Favorites",
+//   tracks=[
+//     Track("Daft Punk", "One More Time"),
+//     Track("Radiohead", "Karma Police")
+//   ]
+// )
 
 // Replace the entire list
 val replaced = original.copyWith {
-    tracks = mutableListOf(Track("Portishead", "Glory Box").toBuilder())
+    tracks = mutableListOf(Track("Muse", "New Born").toBuilder())
 }
-// Playlist(name="Favorites", tracks=[Track("Portishead", "Glory Box")])
+// Playlist(
+//   name="Favorites",
+//   tracks=[
+//     Track("Muse", "New Born")
+//   ]
+// )
 ```
-
-The same approach can be used with `Map`s and `Set`s.
 
 ## License
 
