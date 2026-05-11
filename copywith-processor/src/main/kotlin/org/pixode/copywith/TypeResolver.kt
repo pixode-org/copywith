@@ -38,9 +38,24 @@ class TypeResolver {
 
     fun collectionInfo(type: KSType): CollectionInfo? {
         return when (type.declaration.qualifiedName?.asString()) {
-            "kotlin.collections.List" -> CollectionInfo(ClassName("kotlin.collections", "MutableList"), "toMutableList", "toList")
-            "kotlin.collections.Set"  -> CollectionInfo(ClassName("kotlin.collections", "MutableSet"),  "toMutableSet",  "toSet")
-            "kotlin.collections.Map"  -> CollectionInfo(ClassName("kotlin.collections", "MutableMap"),  "toMutableMap",  "toMap")
+            "kotlin.collections.List" -> CollectionInfo(
+                ClassName("kotlin.collections", "MutableList"),
+                "toMutableList",
+                "toList",
+            )
+
+            "kotlin.collections.Set" -> CollectionInfo(
+                ClassName("kotlin.collections", "MutableSet"),
+                "toMutableSet",
+                "toSet",
+            )
+
+            "kotlin.collections.Map" -> CollectionInfo(
+                ClassName("kotlin.collections", "MutableMap"),
+                "toMutableMap",
+                "toMap",
+            )
+
             else -> null
         }
     }
@@ -75,7 +90,7 @@ class TypeResolver {
             collectionInfo = info,
             mutableType = mutableType,
             nestedBuilderClass = nestedBuilder,
-            elementBuilders = elementBuilders
+            elementBuilders = elementBuilders,
         )
     }
 }

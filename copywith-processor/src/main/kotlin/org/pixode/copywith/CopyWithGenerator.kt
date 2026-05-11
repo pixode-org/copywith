@@ -64,14 +64,14 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 FunSpec
                     .constructorBuilder()
                     .addParameter("original", parameterizedClassType)
-                    .build()
+                    .build(),
             )
             .addProperty(
                 PropertySpec
                     .builder("original", parameterizedClassType)
                     .addModifiers(KModifier.PRIVATE)
                     .initializer("original")
-                    .build()
+                    .build(),
             )
 
         parameters.forEach { parameter ->
@@ -88,16 +88,16 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                         .apply { parameters.forEach { addConstructorArgument(it) } }
                         .unindent()
                         .add(")")
-                        .build()
+                        .build(),
                 )
-                .build()
+                .build(),
         )
 
         val functionSpecs = getExtensionFunctions(
             typeParams = typeParams,
             parameterizedClassType = parameterizedClassType,
             parameterizedBuilderType = parameterizedBuilderType,
-            builderClassName = builderClassName
+            builderClassName = builderClassName,
         )
 
         FileSpec.builder(packageName, "${className}CopyWith")
@@ -112,14 +112,15 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
         val fieldName = "${name}Field"
         when {
             parameter.collectionInfo != null ->
-                add("%N = %L,\n",
+                add(
+                    "%N = %L,\n",
                     name,
                     getCollectionExpression(
                         fieldName = fieldName,
                         info = parameter.collectionInfo,
                         elementBuilders = parameter.elementBuilders ?: emptyList(),
-                        isNullable = parameter.isNullable
-                    )
+                        isNullable = parameter.isNullable,
+                    ),
                 )
 
             parameter.nestedBuilderClass != null ->
@@ -137,7 +138,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
         parameterInfo: TypeResolver.ParameterInfo,
         optionalSome: ClassName,
         optionalClass: ClassName,
-        builderSpec: TypeSpec.Builder
+        builderSpec: TypeSpec.Builder,
     ) {
         val (name, typeName, isNullable, info, mutableType, nestedBuilder, elementBuilders) = parameterInfo
         val fieldName = "${name}Field"
@@ -154,9 +155,10 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
 
         when {
             info != null && mutableType != null -> {
-                initializer = CodeBlock.of("%T(%L)",
+                initializer = CodeBlock.of(
+                    "%T(%L)",
                     optionalSome,
-                    getCollectionInitializer(name, info, elementBuilders ?: emptyList(), isNullable)
+                    getCollectionInitializer(name, info, elementBuilders ?: emptyList(), isNullable),
                 )
                 getter = FunSpec.getterBuilder()
                     .addCode("return %N.getOrThrow()\n", fieldName)
@@ -194,7 +196,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .addModifiers(KModifier.PRIVATE)
                 .mutable(true)
                 .initializer(initializer)
-                .build()
+                .build(),
         )
 
         builderSpec.addProperty(
@@ -202,7 +204,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .mutable(true)
                 .getter(getter)
                 .setter(setter)
-                .build()
+                .build(),
         )
     }
 
@@ -210,7 +212,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
         paramName: String,
         info: TypeResolver.CollectionInfo,
         elementBuilders: List<ClassName?>,
-        isNullable: Boolean
+        isNullable: Boolean,
     ): CodeBlock {
         val dot = if (isNullable) "?." else "."
 
@@ -223,7 +225,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 "original.%N${dot}map·{ %T(it) }${dot}%N()",
                 paramName,
                 elementBuilders[0]!!,
-                info.toMutable
+                info.toMutable,
             )
 
             "MutableMap" -> {
@@ -234,19 +236,19 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                         "original.%N${dot}entries${dot}associate·{ %T(it.key) to %T(it.value) }${dot}toMutableMap()",
                         paramName,
                         keyBuilder,
-                        valBuilder
+                        valBuilder,
                     )
 
                     valBuilder != null -> CodeBlock.of(
                         "original.%N${dot}mapValues·{ %T(it.value) }${dot}toMutableMap()",
                         paramName,
-                        valBuilder
+                        valBuilder,
                     )
 
                     else -> CodeBlock.of(
                         "original.%N${dot}entries${dot}associate·{ %T(it.key) to it.value }${dot}toMutableMap()",
                         paramName,
-                        keyBuilder!!
+                        keyBuilder!!,
                     )
                 }
             }
@@ -259,7 +261,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
         fieldName: String,
         info: TypeResolver.CollectionInfo,
         elementBuilders: List<ClassName?>,
-        isNullable: Boolean
+        isNullable: Boolean,
     ): CodeBlock {
         val dot = if (isNullable) "?." else "."
         if (elementBuilders.none { it != null }) {
@@ -276,15 +278,17 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 when {
                     keyBuilder != null && valBuilder != null -> CodeBlock.of(
                         "%N.getOrThrow()${dot}entries${dot}associate·{ it.key.build() to it.value.build() }${dot}toMap()",
-                        fieldName
+                        fieldName,
                     )
+
                     valBuilder != null -> CodeBlock.of(
                         "%N.getOrThrow()${dot}mapValues·{ it.value.build() }${dot}toMap()",
-                        fieldName
+                        fieldName,
                     )
+
                     else -> CodeBlock.of(
                         "%N.getOrThrow()${dot}entries${dot}associate·{ it.key.build() to it.value }${dot}toMap()",
-                        fieldName
+                        fieldName,
                     )
                 }
             }
@@ -297,7 +301,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
         typeParams: List<TypeVariableName>,
         parameterizedClassType: TypeName,
         parameterizedBuilderType: TypeName,
-        builderClassName: ClassName
+        builderClassName: ClassName,
     ): List<FunSpec> = buildList {
         add(
             FunSpec.builder("copyWith")
@@ -306,7 +310,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .returns(parameterizedClassType)
                 .addParameter("block", LambdaTypeName.get(receiver = parameterizedBuilderType, returnType = UNIT))
                 .addCode("return %T(this).apply(block).build()", builderClassName)
-                .build()
+                .build(),
         )
 
         add(
@@ -315,7 +319,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .receiver(parameterizedClassType)
                 .returns(parameterizedBuilderType)
                 .addCode("return %T(this)", builderClassName)
-                .build()
+                .build(),
         )
 
         val mutableCollectionClass = ClassName("kotlin.collections", "MutableCollection")
@@ -332,7 +336,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .addParameter("element", parameterizedClassType)
                 .returns(BOOLEAN)
                 .addCode("return add(%T(element))", builderClassName)
-                .build()
+                .build(),
         )
 
         add(
@@ -342,7 +346,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .addParameter("elements", collectionClass.parameterizedBy(parameterizedClassType))
                 .returns(BOOLEAN)
                 .addCode("return addAll(elements.map { %T(it) })", builderClassName)
-                .build()
+                .build(),
         )
 
         add(
@@ -354,7 +358,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .addParameter("element", parameterizedClassType)
                 .returns(parameterizedBuilderType)
                 .addCode("return set(index, %T(element))", builderClassName)
-                .build()
+                .build(),
         )
 
         add(
@@ -365,7 +369,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .addParameter("key", kTypeVar)
                 .addParameter("value", parameterizedClassType)
                 .addCode("return set(key, %T(value))", builderClassName)
-                .build()
+                .build(),
         )
 
         add(
@@ -376,7 +380,7 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .addParameter("value", parameterizedClassType)
                 .returns(parameterizedBuilderType.copy(nullable = true))
                 .addCode("return put(key, %T(value))", builderClassName)
-                .build()
+                .build(),
         )
 
         add(
@@ -385,10 +389,10 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
                 .receiver(mutableMapClass.parameterizedBy(kTypeVar, parameterizedBuilderType))
                 .addParameter(
                     "from",
-                    mapClass.parameterizedBy(WildcardTypeName.producerOf(kTypeVar), parameterizedClassType)
+                    mapClass.parameterizedBy(WildcardTypeName.producerOf(kTypeVar), parameterizedClassType),
                 )
                 .addCode("return putAll(from.mapValues { (_, v) -> %T(v) })", builderClassName)
-                .build()
+                .build(),
         )
     }
 }
