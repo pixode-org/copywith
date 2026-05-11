@@ -11,13 +11,13 @@ class CopyWithTest {
         val initial = MultipleFields(
             string = "initial",
             enum = MONDAY,
-            copyable = Nested("aaa", 1)
+            copyable = Nested("aaa", 1),
         )
         val result = initial.copyWith { }
         result shouldBe MultipleFields(
             string = "initial",
             enum = MONDAY,
-            copyable = Nested("aaa", 1)
+            copyable = Nested("aaa", 1),
         )
     }
 
@@ -26,13 +26,13 @@ class CopyWithTest {
         val initial = MultipleFields(
             string = "initial",
             enum = MONDAY,
-            copyable = Nested("aaa", 1)
+            copyable = Nested("aaa", 1),
         )
         val result = initial.copyWith { string = "updated" }
         result shouldBe MultipleFields(
             string = "updated",
             enum = MONDAY,
-            copyable = Nested("aaa", 1)
+            copyable = Nested("aaa", 1),
         )
     }
 
@@ -41,13 +41,13 @@ class CopyWithTest {
         val initial = MultipleFields(
             string = "initial",
             enum = MONDAY,
-            copyable = Nested("aaa", 1)
+            copyable = Nested("aaa", 1),
         )
         val result = initial.copyWith { copyable.string = "bbb" }
         result shouldBe MultipleFields(
             string = "initial",
             enum = MONDAY,
-            copyable = Nested("bbb", 1)
+            copyable = Nested("bbb", 1),
         )
     }
 
@@ -56,13 +56,13 @@ class CopyWithTest {
         val initial = MultipleFields(
             string = "initial",
             enum = MONDAY,
-            copyable = Nested("aaa", 1)
+            copyable = Nested("aaa", 1),
         )
         val result = initial.copyWith { copyable = Nested("bbb", 2).toBuilder() }
         result shouldBe MultipleFields(
             string = "initial",
             enum = MONDAY,
-            copyable = Nested("bbb", 2)
+            copyable = Nested("bbb", 2),
         )
     }
 
@@ -71,7 +71,7 @@ class CopyWithTest {
         val initial = MultipleFields(
             string = "initial",
             enum = MONDAY,
-            copyable = Nested("aaa", 1)
+            copyable = Nested("aaa", 1),
         )
         val result = initial.copyWith {
             string = copyable.string
@@ -80,7 +80,7 @@ class CopyWithTest {
         result shouldBe MultipleFields(
             string = "aaa",
             enum = MONDAY,
-            copyable = Nested("MONDAY", 1)
+            copyable = Nested("MONDAY", 1),
         )
     }
 

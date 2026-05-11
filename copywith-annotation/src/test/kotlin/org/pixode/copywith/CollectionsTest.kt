@@ -14,12 +14,12 @@ class CollectionsTest {
     fun `copyWith with no changes returns an equal list`() {
         val initial = ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1))
+            copyableList = listOf(Nested("aaa", 1)),
         )
         val result = initial.copyWith { }
         result shouldBe ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1))
+            copyableList = listOf(Nested("aaa", 1)),
         )
     }
 
@@ -27,7 +27,7 @@ class CollectionsTest {
     fun `copyWith adds an element to the list`() {
         val initial = ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleList.add("d")
@@ -35,7 +35,7 @@ class CollectionsTest {
         }
         result shouldBe ListFields(
             simpleList = listOf("a", "b", "c", "d"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3)),
         )
     }
 
@@ -43,7 +43,7 @@ class CollectionsTest {
     fun `copyWith adds multiple elements to the list`() {
         val initial = ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleList.addAll(listOf("d", "e"))
@@ -51,7 +51,7 @@ class CollectionsTest {
         }
         result shouldBe ListFields(
             simpleList = listOf("a", "b", "c", "d", "e"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3), Nested("ddd", 4))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3), Nested("ddd", 4)),
         )
     }
 
@@ -59,7 +59,7 @@ class CollectionsTest {
     fun `copyWith removes an element from the list`() {
         val initial = ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleList.removeAt(1)
@@ -67,7 +67,7 @@ class CollectionsTest {
         }
         result shouldBe ListFields(
             simpleList = listOf("a", "c"),
-            copyableList = listOf(Nested("bbb", 2))
+            copyableList = listOf(Nested("bbb", 2)),
         )
     }
 
@@ -75,7 +75,7 @@ class CollectionsTest {
     fun `copyWith replaces an element in the list and does not mutate the original list`() {
         val initial = ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleList[1] = "d"
@@ -83,11 +83,11 @@ class CollectionsTest {
         }
         result shouldBe ListFields(
             simpleList = listOf("a", "d", "c"),
-            copyableList = listOf(Nested("ccc", 3), Nested("bbb", 2))
+            copyableList = listOf(Nested("ccc", 3), Nested("bbb", 2)),
         )
         initial shouldBe ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
     }
 
@@ -95,18 +95,18 @@ class CollectionsTest {
     fun `copyWith modifies an element in the list and does not mutate the original list`() {
         val initial = ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             copyableList[0].string = "ccc"
         }
         result shouldBe ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("ccc", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("ccc", 1), Nested("bbb", 2)),
         )
         initial shouldBe ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
     }
 
@@ -114,7 +114,7 @@ class CollectionsTest {
     fun `copyWith replaces the entire list`() {
         val initial = ListFields(
             simpleList = listOf("a", "b", "c"),
-            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableList = listOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleList = mutableListOf("d", "e")
@@ -122,7 +122,7 @@ class CollectionsTest {
         }
         result shouldBe ListFields(
             simpleList = listOf("d", "e"),
-            copyableList = listOf(Nested("ccc", 3))
+            copyableList = listOf(Nested("ccc", 3)),
         )
     }
 
@@ -132,12 +132,12 @@ class CollectionsTest {
     fun `copyWith with no changes returns an equal map`() {
         val initial = MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
         val result = initial.copyWith { }
         result shouldBe MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
     }
 
@@ -145,7 +145,7 @@ class CollectionsTest {
     fun `copyWith adds an entry to the map`() {
         val initial = MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleMap.put(WEDNESDAY, 3)
@@ -153,7 +153,7 @@ class CollectionsTest {
         }
         result shouldBe MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2, WEDNESDAY to 3),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2), "C" to Nested("ccc", 3))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2), "C" to Nested("ccc", 3)),
         )
     }
 
@@ -161,7 +161,7 @@ class CollectionsTest {
     fun `copyWith adds multiple entries to the map`() {
         val initial = MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleMap.putAll(mapOf(WEDNESDAY to 3, DayOfWeek.THURSDAY to 4))
@@ -169,7 +169,12 @@ class CollectionsTest {
         }
         result shouldBe MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2, WEDNESDAY to 3, DayOfWeek.THURSDAY to 4),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2), "C" to Nested("ccc", 3), "D" to Nested("ddd", 4))
+            copyableMap = mapOf(
+                "A" to Nested("aaa", 1),
+                "B" to Nested("bbb", 2),
+                "C" to Nested("ccc", 3),
+                "D" to Nested("ddd", 4),
+            ),
         )
     }
 
@@ -177,7 +182,7 @@ class CollectionsTest {
     fun `copyWith removes an entry from the map`() {
         val initial = MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleMap.remove(TUESDAY)
@@ -185,7 +190,7 @@ class CollectionsTest {
         }
         result shouldBe MapFields(
             simpleMap = mapOf(MONDAY to 1),
-            copyableMap = mapOf("B" to Nested("bbb", 2))
+            copyableMap = mapOf("B" to Nested("bbb", 2)),
         )
     }
 
@@ -193,7 +198,7 @@ class CollectionsTest {
     fun `copyWith replaces an entry in the map and does not mutate the original map`() {
         val initial = MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleMap[TUESDAY] = 99
@@ -201,11 +206,11 @@ class CollectionsTest {
         }
         result shouldBe MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 99),
-            copyableMap = mapOf("A" to Nested("ccc", 3), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("ccc", 3), "B" to Nested("bbb", 2)),
         )
         initial shouldBe MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
     }
 
@@ -213,18 +218,18 @@ class CollectionsTest {
     fun `copyWith modifies an entry in the map and does not mutate the original map`() {
         val initial = MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             copyableMap["A"]?.string = "ccc"
         }
         result shouldBe MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("ccc", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("ccc", 1), "B" to Nested("bbb", 2)),
         )
         initial shouldBe MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
     }
 
@@ -232,7 +237,7 @@ class CollectionsTest {
     fun `copyWith replaces the entire map`() {
         val initial = MapFields(
             simpleMap = mapOf(MONDAY to 1, TUESDAY to 2),
-            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2))
+            copyableMap = mapOf("A" to Nested("aaa", 1), "B" to Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleMap = mutableMapOf(WEDNESDAY to 3)
@@ -240,7 +245,7 @@ class CollectionsTest {
         }
         result shouldBe MapFields(
             simpleMap = mapOf(WEDNESDAY to 3),
-            copyableMap = mapOf("C" to Nested("ccc", 3))
+            copyableMap = mapOf("C" to Nested("ccc", 3)),
         )
     }
 
@@ -250,12 +255,12 @@ class CollectionsTest {
     fun `copyWith with no changes returns an equal set`() {
         val initial = SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith { }
         result shouldBe SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
     }
 
@@ -263,7 +268,7 @@ class CollectionsTest {
     fun `copyWith adds an element to the set`() {
         val initial = SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleSet.add(WEDNESDAY)
@@ -271,7 +276,7 @@ class CollectionsTest {
         }
         result shouldBe SetFields(
             simpleSet = setOf(MONDAY, TUESDAY, WEDNESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3)),
         )
     }
 
@@ -279,7 +284,7 @@ class CollectionsTest {
     fun `copyWith adds multiple elements to the set`() {
         val initial = SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleSet.addAll(setOf(WEDNESDAY, DayOfWeek.THURSDAY))
@@ -287,7 +292,7 @@ class CollectionsTest {
         }
         result shouldBe SetFields(
             simpleSet = setOf(MONDAY, TUESDAY, WEDNESDAY, DayOfWeek.THURSDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3), Nested("ddd", 4))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2), Nested("ccc", 3), Nested("ddd", 4)),
         )
     }
 
@@ -295,7 +300,7 @@ class CollectionsTest {
     fun `copyWith removes an element from the set`() {
         val initial = SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleSet.remove(MONDAY)
@@ -303,7 +308,7 @@ class CollectionsTest {
         }
         result shouldBe SetFields(
             simpleSet = setOf(TUESDAY),
-            copyableSet = setOf(Nested("bbb", 2))
+            copyableSet = setOf(Nested("bbb", 2)),
         )
     }
 
@@ -311,18 +316,18 @@ class CollectionsTest {
     fun `copyWith modifies an element in the set and does not mutate the original set`() {
         val initial = SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             copyableSet.first { it.string == "aaa" }.string = "ccc"
         }
         result shouldBe SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("ccc", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("ccc", 1), Nested("bbb", 2)),
         )
         initial shouldBe SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
     }
 
@@ -330,7 +335,7 @@ class CollectionsTest {
     fun `copyWith replaces the entire set`() {
         val initial = SetFields(
             simpleSet = setOf(MONDAY, TUESDAY),
-            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2))
+            copyableSet = setOf(Nested("aaa", 1), Nested("bbb", 2)),
         )
         val result = initial.copyWith {
             simpleSet = mutableSetOf(DayOfWeek.FRIDAY)
@@ -338,7 +343,7 @@ class CollectionsTest {
         }
         result shouldBe SetFields(
             simpleSet = setOf(DayOfWeek.FRIDAY),
-            copyableSet = setOf(Nested("ccc", 3))
+            copyableSet = setOf(Nested("ccc", 3)),
         )
     }
 }
