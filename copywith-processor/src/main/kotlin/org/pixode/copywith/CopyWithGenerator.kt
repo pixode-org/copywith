@@ -36,7 +36,10 @@ class CopyWithGenerator(private val codeGenerator: CodeGenerator) {
         containingFile: KSFile,
     ) {
         val typeParamResolver = classDeclaration.typeParameters.toTypeParameterResolver()
-        val className = classDeclaration.simpleName.asString()
+        val className = classDeclaration.qualifiedName?.asString()
+            ?.removePrefix("$packageName.")
+            ?.replace(".", "_")
+            ?: classDeclaration.simpleName.asString()
         val classTypeName = classDeclaration.toClassName()
         val builderClassName = ClassName(packageName, "${className}Builder")
         val optionalClass = ClassName("org.pixode.copywith", "Optional")

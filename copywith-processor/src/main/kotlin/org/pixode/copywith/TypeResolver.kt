@@ -33,7 +33,12 @@ class TypeResolver {
             it.annotationType.resolve().declaration.qualifiedName?.asString() == CopyWith::class.qualifiedName
         }
         if (!isCopyWithAnnotated) return null
-        return ClassName(declaration.packageName.asString(), "${declaration.simpleName.asString()}Builder")
+        val packageName = declaration.packageName.asString()
+        val localName = declaration.qualifiedName?.asString()
+            ?.removePrefix("$packageName.")
+            ?.replace(".", "_")
+            ?: declaration.simpleName.asString()
+        return ClassName(packageName, "${localName}Builder")
     }
 
     fun collectionInfo(type: KSType): CollectionInfo? {

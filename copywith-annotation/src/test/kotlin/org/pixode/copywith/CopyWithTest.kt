@@ -93,6 +93,23 @@ class CopyWithTest {
     }
 
     @Test
+    fun `copyWith works with nested classes`() {
+        val initial = OuterClass(
+            copyable = OuterClass.NestedClass(
+                integer = 1,
+            )
+        )
+        val result = initial.copyWith {
+            copyable.integer = 2
+        }
+        result shouldBe OuterClass(
+            copyable = OuterClass.NestedClass(
+                integer = 2,
+            )
+        )
+    }
+
+    @Test
     fun `copyWith generates fields with reserved names`() {
         val initial = ReservedKeywordsFields(
             `in` = "in",

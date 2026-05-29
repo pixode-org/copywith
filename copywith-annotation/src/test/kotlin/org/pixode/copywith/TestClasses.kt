@@ -53,6 +53,16 @@ data class MutableClass(
 )
 
 @CopyWith
+data class OuterClass(
+    var copyable: NestedClass,
+) {
+    @CopyWith
+    data class NestedClass(
+        val integer: Int,
+    )
+}
+
+@CopyWith
 data class ReservedKeywordsFields(
     val `in`: String,
     val `return`: String,
